@@ -1,11 +1,12 @@
 const express = require("express");
 const { connectToDb, getDb } = require("./db");
 const { ObjectId } = require("mongodb");
-
+const cors = require("cors");
 // init app and middleware
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // db connection
 connectToDb((err) => {
@@ -20,14 +21,13 @@ connectToDb((err) => {
 });
 
 // routes
-
 // search all
 app.get("/students", (req, res) => {
-  console.log("client connected");
+  // console.log("client connected");
   let students = [];
   db.collection("students")
     .find()
-    .sort({ name: 1 })
+    .sort({ studentId: 1 })
     .forEach((student) => {
       students.push(student);
     })
@@ -41,7 +41,7 @@ app.get("/students", (req, res) => {
 
 // get requests
 // search one
-app.get("/students/:studentId", (req, res) => {
+app.get("/students/search/:studentId", (req, res) => {
   console.log("client requested a student's data");
   x = req.params.studentId;
   db.collection("students")
@@ -61,7 +61,7 @@ app.get("/students/:studentId", (req, res) => {
 
 // post requests
 // add one
-app.post("/students", (req, res) => {
+app.post("/students/add", (req, res) => {
   console.log("client is adding a student");
   const newStudent = req.body;
   db.collection("students")
@@ -75,9 +75,26 @@ app.post("/students", (req, res) => {
     });
 });
 
+// patch requests
+// update one
+app.patch("/students/update/:studentId", (req, res) => {
+  console.log("client is adding a student");
+  const updates = req.body;
+  u = req.params.studentId;
+  db.collection("students")
+    .updateOne({ studentId: u }, { $set: updates })
+    .then((result) => {
+      res.status(201).json(result);
+      console.log("student data updated sucessfully!");
+    })
+    .catch((err) => {
+      res.status(500).json({ error: "Could not update student info" });
+    });
+});
+
 // delete requests
 // delete one
-app.delete("/students/:studentId", (req, res) => {
+app.delete("/students/delete/:studentId", (req, res) => {
   console.log("client is deleting a student");
   d = req.params.studentId;
   db.collection("students")
