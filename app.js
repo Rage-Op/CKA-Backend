@@ -27,7 +27,7 @@ app.get("/students", (req, res) => {
   let students = [];
   db.collection("students")
     .find()
-    .sort({ studentId: 1 })
+    .sort({ studentId: -1 })
     .forEach((student) => {
       students.push(student);
     })
