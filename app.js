@@ -114,11 +114,7 @@ app.patch("/settings", (req, res) => {
   const updates = req.body;
   u = req.params.studentId;
   db.collection("settings")
-    .findOneAndUpdate(
-      {},
-      { $set: updates },
-      { returnOriginal: false } // To return the updated document
-    )
+    .findOneAndUpdate({}, { $set: updates })
     .then((result) => {
       res.status(201).json(result);
       console.log("settings updated sucessfully!");
