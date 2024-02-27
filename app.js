@@ -39,6 +39,23 @@ app.get("/students", (req, res) => {
     });
 });
 
+// settings
+app.get("/settings", (req, res) => {
+  // console.log("client connected");
+  let students = [];
+  db.collection("settings")
+    .find()
+    .forEach((student) => {
+      students.push(student);
+    })
+    .then(() => {
+      res.status(200).json(students);
+    })
+    .catch(() => {
+      res.status(500).json({ error: "could not student data" });
+    });
+});
+
 // get requests
 // search one
 app.get("/students/search/:studentId", (req, res) => {
