@@ -41,7 +41,6 @@ app.get("/students", (req, res) => {
 
 // settings
 app.get("/settings", (req, res) => {
-  // console.log("client connected");
   let students = [];
   db.collection("settings")
     .find()
@@ -52,7 +51,7 @@ app.get("/settings", (req, res) => {
       res.status(200).json(students);
     })
     .catch(() => {
-      res.status(500).json({ error: "could not student data" });
+      res.status(500).json({ error: "could not send settings data" });
     });
 });
 
@@ -106,6 +105,26 @@ app.patch("/students/update/:studentId", (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({ error: "Could not update student info" });
+    });
+});
+
+// update settings
+app.patch("/settings", (req, res) => {
+  console.log("client is updating settings");
+  const updates = req.body;
+  u = req.params.studentId;
+  db.collection("settings")
+    .findOneAndUpdate(
+      {},
+      { $set: updates },
+      { returnOriginal: false } // To return the updated document
+    )
+    .then((result) => {
+      res.status(201).json(result);
+      console.log("settings updated sucessfully!");
+    })
+    .catch((err) => {
+      res.status(500).json({ error: "Could not update settings" });
     });
 });
 
