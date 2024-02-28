@@ -27,36 +27,30 @@ connectToDb((err) => {
 // routes
 // search all
 app.get("/students", (req, res) => {
-  // console.log("client connected");
-  let students = [];
   db.collection("students")
     .find()
-    .batchSize(10000)
     .sort({ studentId: -1 })
-    .forEach((student) => {
-      students.push(student);
-    })
-    .then(() => {
+    .toArray()
+    .then((students) => {
       res.status(200).json(students);
     })
-    .catch(() => {
-      res.status(500).json({ error: "could not student data" });
+    .catch((err) => {
+      console.error("Error fetching student data:", err);
+      res.status(500).json({ error: "Could not fetch student data" });
     });
 });
 
 // settings
 app.get("/settings", (req, res) => {
-  let students = [];
   db.collection("settings")
     .find()
-    .forEach((student) => {
-      students.push(student);
+    .toArray()
+    .then((settings) => {
+      res.status(200).json(settings);
     })
-    .then(() => {
-      res.status(200).json(students);
-    })
-    .catch(() => {
-      res.status(500).json({ error: "could not send settings data" });
+    .catch((err) => {
+      console.error("Error fetching settings data:", err);
+      res.status(500).json({ error: "Could not fetch settings data" });
     });
 });
 
