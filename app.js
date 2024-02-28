@@ -54,6 +54,20 @@ app.get("/settings", (req, res) => {
     });
 });
 
+// debit-log
+app.get("/debit-log", (req, res) => {
+  db.collection("debit-log")
+    .find()
+    .toArray()
+    .then((log) => {
+      res.status(200).json(log);
+    })
+    .catch((err) => {
+      console.error("Error fetching debit log data:", err);
+      res.status(500).json({ error: "Could not fetch debit log" });
+    });
+});
+
 // get requests
 // search one
 app.get("/students/search/:studentId", (req, res) => {
@@ -124,7 +138,7 @@ app.patch("/settings", (req, res) => {
 
 // fees debit
 app.patch("/debit", (req, res) => {
-  console.log("Client is updating students");
+  console.log("Client is updating debits students");
   const updates = req.body;
   Promise.all(
     updates.map((update) => {
