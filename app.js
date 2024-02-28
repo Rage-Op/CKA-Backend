@@ -28,8 +28,9 @@ app.get("/students", (req, res) => {
   db.collection("students")
     .find()
     .sort({ studentId: -1 })
-    .forEach((student) => {
-      students.push(student);
+    .toArray()
+    .then((students) => {
+      res.status(200).json(students);
     })
     .then(() => {
       res.status(200).json(students);
