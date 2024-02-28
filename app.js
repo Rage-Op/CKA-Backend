@@ -111,7 +111,6 @@ app.patch("/students/update/:studentId", (req, res) => {
 app.patch("/settings", (req, res) => {
   console.log("client is updating settings");
   const updates = req.body;
-  u = req.params.studentId;
   db.collection("settings")
     .findOneAndUpdate({}, { $set: updates })
     .then((result) => {
@@ -120,6 +119,31 @@ app.patch("/settings", (req, res) => {
     })
     .catch((err) => {
       res.status(500).json({ error: "Could not update settings" });
+    });
+});
+
+// fees debit
+app.patch("/debit", (req, res) => {
+  console.log("Client is updating students");
+  const updates = req.body;
+  Promise.all(
+    updates.map((update) => {
+      return db
+        .collection("students")
+        .findOneAndUpdate(
+          { studentId: update.studentId },
+          { $set: update },
+          { returnOriginal: false }
+        );
+    })
+  )
+    .then((updatedDocuments) => {
+      res.status(200).json(updatedDocuments);
+      console.log("Students updated successfully!");
+    })
+    .catch((error) => {
+      console.error("Error updating students:", error);
+      res.status(500).json({ error: "Could not update students" });
     });
 });
 
