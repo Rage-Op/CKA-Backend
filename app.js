@@ -6,7 +6,11 @@ const cors = require("cors");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 // db connection
 connectToDb((err) => {
@@ -27,8 +31,11 @@ app.get("/students", (req, res) => {
   let students = [];
   db.collection("students")
     .find()
+    .batchSize(10000)
     .sort({ studentId: -1 })
-    .toArray()
+    .forEach((student) => {
+      students.push(student);
+    })
     .then((students) => {
       res.status(200).json(students);
     })
