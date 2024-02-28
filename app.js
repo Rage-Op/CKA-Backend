@@ -36,9 +36,6 @@ app.get("/students", (req, res) => {
     .forEach((student) => {
       students.push(student);
     })
-    .then((students) => {
-      res.status(200).json(students);
-    })
     .then(() => {
       res.status(200).json(students);
     })
