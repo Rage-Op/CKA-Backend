@@ -136,6 +136,21 @@ app.patch("/settings", (req, res) => {
     });
 });
 
+// debit log
+app.patch("/settings", (req, res) => {
+  console.log("client is updating settings");
+  const logUpdate = req.body;
+  db.collection("debit-log")
+    .findOneAndUpdate({}, { $set: logUpdate })
+    .then((result) => {
+      res.status(201).json(result);
+      console.log("settings updated sucessfully!");
+    })
+    .catch((err) => {
+      res.status(500).json({ error: "Could not update settings" });
+    });
+});
+
 // fees debit
 app.patch("/debit", (req, res) => {
   console.log("Client is updating debits students");
