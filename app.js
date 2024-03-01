@@ -2,15 +2,54 @@ const express = require("express");
 const { connectToDb, getDb } = require("./db");
 const { ObjectId } = require("mongodb");
 const cors = require("cors");
+const path = require("path");
 // init app and middleware
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 app.use(
   cors({
     origin: "*",
   })
 );
+
+// webpage get routes
+// index.html
+app.get("/admin/index.html", (req, res) => {
+  // Send the HTML file as a response
+  res.sendFile(path.join(__dirname, "public", "admin", "index.html"));
+});
+
+// // search.html
+// app.get("/admin/search.html", (req, res) => {
+//   // Send the HTML file as a response
+//   res.sendFile(path.join(__dirname, "public", "admin", "search.html"));
+// });
+
+// // add.html
+// app.get("/admin/add.html", (req, res) => {
+//   // Send the HTML file as a response
+//   res.sendFile(path.join(__dirname, "public", "admin", "add.html"));
+// });
+
+// // update.html
+// app.get("/admin/update.html", (req, res) => {
+//   // Send the HTML file as a response
+//   res.sendFile(path.join(__dirname, "public", "admin", "update.html"));
+// });
+
+// // index.html
+// app.get("/admin/index.html", (req, res) => {
+//   // Send the HTML file as a response
+//   res.sendFile(path.join(__dirname, "public", "admin", "index.html"));
+// });
+
+// // index.html
+// app.get("/admin/index.html", (req, res) => {
+//   // Send the HTML file as a response
+//   res.sendFile(path.join(__dirname, "public", "admin", "index.html"));
+// });
 
 // db connection
 connectToDb((err) => {
