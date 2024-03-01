@@ -2,6 +2,7 @@ const express = require("express");
 const { connectToDb, getDb } = require("./db");
 const { ObjectId } = require("mongodb");
 const cors = require("cors");
+const NepaliDate = require("nepali-datetime");
 const path = require("path");
 // init app and middleware
 
@@ -34,6 +35,7 @@ connectToDb((err) => {
 });
 
 // routes
+// get requests
 // search all
 app.get("/students", (req, res) => {
   db.collection("students")
@@ -77,7 +79,12 @@ app.get("/debit-log", (req, res) => {
     });
 });
 
-// get requests
+// BS-date
+app.get("/bs-date", (req, res) => {
+  const bsDate = new NepaliDate();
+  res.json(bsDate.toString());
+});
+
 // search one
 app.get("/students/search/:studentId", (req, res) => {
   console.log("client requested a student's data");
