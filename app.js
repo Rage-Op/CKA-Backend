@@ -36,11 +36,26 @@ connectToDb((err) => {
 
 // routes
 // get requests
-// search all
+// search all => ascending order
+app.get("/ascending-students", (req, res) => {
+  db.collection("students")
+    .find()
+    .sort({ studentId: 1 }) // ascending order
+    .toArray()
+    .then((students) => {
+      res.status(200).json(students);
+    })
+    .catch((err) => {
+      console.error("Error fetching student data:", err);
+      res.status(500).json({ error: "Could not fetch student data" });
+    });
+});
+
+// search all => descendinng order
 app.get("/students", (req, res) => {
   db.collection("students")
     .find()
-    .sort({ studentId: -1 })
+    .sort({ studentId: -1 }) // descending order
     .toArray()
     .then((students) => {
       res.status(200).json(students);
@@ -153,7 +168,7 @@ app.patch("/settings", (req, res) => {
 });
 
 // debit log
-app.patch("/settings", (req, res) => {
+app.patch("/debit-log", (req, res) => {
   console.log("client is updating settings");
   const logUpdate = req.body;
   db.collection("debit-log")
