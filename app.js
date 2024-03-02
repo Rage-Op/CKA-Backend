@@ -103,7 +103,7 @@ app.get("/bs-date", (req, res) => {
 // search one
 app.get("/students/search/:studentId", (req, res) => {
   console.log("client requested a student's data");
-  x = req.params.studentId;
+  x = parseInt(req.params.studentId);
   db.collection("students")
     .findOne({ studentId: x })
     .then((doc) => {
@@ -140,7 +140,7 @@ app.post("/students/add", (req, res) => {
 app.patch("/students/update/:studentId", (req, res) => {
   console.log("client is adding a student");
   const updates = req.body;
-  u = req.params.studentId;
+  u = parseInt(req.params.studentId);
   db.collection("students")
     .updateOne({ studentId: u }, { $set: updates })
     .then((result) => {
@@ -211,7 +211,7 @@ app.patch("/debit", (req, res) => {
 // delete one
 app.delete("/students/delete/:studentId", (req, res) => {
   console.log("client is deleting a student");
-  d = req.params.studentId;
+  d = parseInt(req.params.studentId);
   db.collection("students")
     .deleteOne({ studentId: d })
     .then((result) => {
