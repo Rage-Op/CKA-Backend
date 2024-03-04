@@ -15,6 +15,20 @@ app.use(
   })
 );
 
+// Login
+const users = [{ id: 1, username: "admin123", password: "password123" }];
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find((u) => u.username === username);
+  if (!user) {
+    return res.status(401).json({ error: "Invalid username or password" });
+  }
+  if (user.password !== password) {
+    return res.status(401).json({ error: "Invalid username or password" });
+  }
+  res.status(200).json({ message: "Login successful" });
+});
+
 // webpage get routes
 // index.html
 app.get("/admin/index.html", (req, res) => {
