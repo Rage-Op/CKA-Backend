@@ -4,10 +4,18 @@ const { ObjectId } = require("mongodb");
 const cors = require("cors");
 const NepaliDate = require("nepali-datetime");
 const path = require("path");
+const session = require("express-session");
 // init app and middleware
 
 const app = express();
 app.use(express.json());
+app.use(
+  session({
+    secret: "your_secret_key", // Change this to a secret key
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   cors({
@@ -15,26 +23,45 @@ app.use(
   })
 );
 
-// Login
-const users = [{ id: 1, username: "admin123", password: "password123" }];
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find((u) => u.username === username);
-  if (!user) {
-    return res.status(401).json({ error: "Invalid username or password" });
+// Website Credentials
+const USERNAME = "admin789";
+const PASSWORD = "password789";
+
+const requireAuth = (req, res, next) => {
+  if (req.session && req.session.authenticated) {
+    next();
+  } else {
+    res.redirect("/login");
   }
-  if (user.password !== password) {
-    return res.status(401).json({ error: "Invalid username or password" });
-  }
-  res.status(200).json({ message: "Login successful" });
+};
+
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// webpage get routes
-// index.html
-app.get("/admin/index.html", (req, res) => {
-  // Send the HTML file as a response
-  res.sendFile(path.join(__dirname, "public", "admin", "index.html"));
+// Login
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === USERNAME && password === PASSWORD) {
+    req.session.authenticated = true;
+    res.redirect("/index.html");
+  } else {
+    res.redirect("./login.html");
+  }
 });
+
+// Logout
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect("/login.html");
+  });
+});
+
+// Protect routes
+app.use(requireAuth);
 
 // db connection
 connectToDb((err) => {

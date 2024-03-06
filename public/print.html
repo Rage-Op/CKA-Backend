@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="icon" href="./content/logo.png" />
+    <title>CKA-Print</title>
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <a href="#" class="logo">
+        <i class="bx bxs-dashboard"></i>
+        <div class="logo-name"><span>CKA</span> Admin</div>
+      </a>
+      <ul class="side-menu">
+        <li>
+          <a href="./index.html"><i class="bx bxs-dashboard"></i>Dashboard</a>
+        </li>
+        <li>
+          <a href="./search.html"><i class="bx bx-search"></i>Search</a>
+        </li>
+        <li>
+          <a href="./add.html"><i class="bx bx-user-plus"></i>Add</a>
+        </li>
+        <li>
+          <a href="./update.html"><i class="bx bx-duplicate"></i>Update</a>
+        </li>
+        <li>
+          <a href="./fees.html"><i class="bx bx-group"></i>Fees</a>
+        </li>
+        <li>
+          <a href="./delete.html"><i class="bx bx-trash"></i>Delete</a>
+        </li>
+        <li class="active">
+          <a href="#"><i class="bx bx-printer"></i>Print</a>
+        </li>
+        <li>
+          <a href="./settings.html"><i class="bx bx-cog"></i>Settings</a>
+        </li>
+      </ul>
+      <ul class="side-menu">
+        <li>
+          <a href="#" class="logout">
+            <i class="bx bx-log-out"></i>
+            Log Out
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- End of Sidebar -->
+
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Navbar -->
+      <nav>
+        <i class="bx bx-menu" id="nav-dash"></i>
+        <input type="checkbox" id="theme-toggle" hidden />
+        <label for="theme-toggle" class="theme-toggle"></label>
+        <a href="#" class="profile">
+          <img src="./content/logo.png" />
+        </a>
+      </nav>
+
+      <!-- End of Navbar -->
+
+      <main>
+        <div class="header" id="dialog-parent">
+          <div class="left">
+            <h1>Fees</h1>
+            <ul class="breadcrumb">
+              <li><a href="#"> CKA </a></li>
+              /
+              <li><a href="#" class="active">Print</a></li>
+            </ul>
+          </div>
+          <div id="sucess-dialog">
+            <h4>Sucess!</h4>
+            <p>Student found</p>
+          </div>
+        </div>
+        <!-- Start of print -->
+        <div class="bottom-data">
+          <div class="orders" style="height: 100%">
+            <div class="header">
+              <i class="bx bx-notepad"></i>
+              <h3>Due Notices</h3>
+              <i class="bx bx-filter" style="padding-right: 10px"></i>
+            </div>
+            <table id="toPrint">
+              <tbody id="fee-due-table-body"></tbody>
+            </table>
+            <div class="result-bottom">
+              <div class="add-bottom-left">
+                <li>
+                  <i class="bx bx-hash"></i>
+                  <span class="info">
+                    <h3 id="print-studentId">...</h3>
+                    <p>Student Id</p>
+                  </span>
+                </li>
+              </div>
+              <div class="add-bottom-mid" style="width: 324px">
+                <li>
+                  <i class="bx bx-calendar-check"></i>
+                  <span class="info">
+                    <h3 id="print-date">...</h3>
+                    <p>Date</p>
+                  </span>
+                </li>
+              </div>
+              <div class="add-bottom-mid2">
+                <button
+                  type="submit"
+                  class="general-form-button-submit"
+                  id="printButton"
+                >
+                  Print
+                </button>
+              </div>
+              <div class="add-bottom-right">
+                <button
+                  class="general-form-button-cancel"
+                  id="print-next-button"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-data">
+          <div class="orders" style="height: 100%">
+            <div class="header">
+              <i class="bx bx-notepad"></i>
+              <h3>Admission Form</h3>
+              <i class="bx bx-filter" style="padding-right: 10px"></i>
+            </div>
+            <div class="searchStudent">
+              <form id="search-student-form">
+                <div id="formsearch">
+                  <input type="search" placeholder="Search...(Student ID)" />
+                  <button class="search-btn" type="submit">
+                    <i class="bx bx-search"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+            <!--  -->
+            <!--  -->
+            <!--  -->
+            <div class="form-wrapper">
+              <div class="main-form" id="to-print-form">
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-date"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-name"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-class"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-DOB"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-student-id"
+                  autocomplete="off"
+                />
+                <input
+                  type="checkbox"
+                  class="admission-form"
+                  id="form-gender-male"
+                />
+                <input
+                  type="checkbox"
+                  class="admission-form"
+                  id="form-gender-female"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-fname"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-mname"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-nationality"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-zip-code"
+                  autocomplete="off"
+                />
+                <input
+                  type="checkbox"
+                  class="admission-form"
+                  id="form-transport"
+                />
+                <input type="checkbox" class="admission-form" id="form-diet" />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-mobile"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-whatsapp"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-facebook"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-prev-school-name"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-prev-school-class"
+                  autocomplete="off"
+                />
+                <input
+                  type="text"
+                  class="admission-form"
+                  id="form-address"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <!--  -->
+            <!--  -->
+            <!--  -->
+            <div class="result-bottom">
+              <div class="add-bottom-left">
+                <li>
+                  <i class="bx bx-hash"></i>
+                  <span class="info">
+                    <h3 id="print-admission-form-studentId">...</h3>
+                    <p>Student Id</p>
+                  </span>
+                </li>
+              </div>
+              <div class="add-bottom-mid2">
+                <button
+                  type="submit"
+                  class="general-form-button-submit"
+                  id="admission-form-print-button"
+                >
+                  Print
+                </button>
+              </div>
+              <div class="add-bottom-right">
+                <button
+                  class="general-form-button-cancel"
+                  id="print-cancel-button"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End of print-->
+      </main>
+    </div>
+    <script src="./print.js"></script>
+  </body>
+</html>
