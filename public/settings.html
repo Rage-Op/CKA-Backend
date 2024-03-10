@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./index.css" />
+    <link rel="icon" href="./content/logo.png" />
+    <title>CKA-Add</title>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <a href="#" class="logo">
+        <i class="bx bxs-dashboard"></i>
+        <div class="logo-name"><span>CKA</span> Admin</div>
+      </a>
+      <ul class="side-menu">
+        <li>
+          <a href="./index.html"><i class="bx bxs-dashboard"></i>Dashboard</a>
+        </li>
+        <li>
+          <a href="./search.html"><i class="bx bx-search"></i>Search</a>
+        </li>
+        <li>
+          <a href="./add.html"><i class="bx bx-user-plus"></i>Add</a>
+        </li>
+        <li>
+          <a href="./update.html"><i class="bx bx-duplicate"></i>Update</a>
+        </li>
+        <li>
+          <a href="./fees.html"><i class="bx bx-group"></i>Fees</a>
+        </li>
+        <li>
+          <a href="./delete.html"><i class="bx bx-trash"></i>Delete</a>
+        </li>
+        <li>
+          <a href="./print.html"><i class="bx bx-printer"></i>Print</a>
+        </li>
+        <li class="active">
+          <a href="#"><i class="bx bx-cog"></i>Settings</a>
+        </li>
+      </ul>
+    </div>
+    <!-- End of Sidebar -->
+
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Navbar -->
+      <nav>
+        <i class="bx bx-menu" id="nav-dash"></i>
+        <input type="checkbox" id="theme-toggle" hidden />
+        <label for="theme-toggle" class="theme-toggle"></label>
+        <a href="#" class="profile">
+          <img src="./content/logo.png" />
+        </a>
+      </nav>
+
+      <!-- End of Navbar -->
+
+      <main>
+        <div class="header">
+          <div class="left">
+            <h1>Settings</h1>
+            <ul class="breadcrumb">
+              <li><a href="#"> CKA </a></li>
+              /
+              <li><a href="#" class="active">Settings</a></li>
+            </ul>
+          </div>
+          <div id="sucess-dialog">
+            <h4>Sucess!</h4>
+            <p>Settings updated</p>
+          </div>
+        </div>
+
+        <!-- add div start -->
+        <div class="bottom-data">
+          <div class="orders" style="height: 100%">
+            <div class="header">
+              <i class="bx bx-cog"></i>
+              <h3>Update settings</h3>
+              <i class="bx bx-filter" style="padding-right: 10px"></i>
+            </div>
+            <form action="">
+              <div class="search-result">
+                <h4 style="text-align: center; margin-bottom: 20px">
+                  Monthly Fees of Individual Student
+                </h4>
+                <div
+                  class="result-right-data"
+                  style="background-color: var(--grey)"
+                >
+                  <div class="settings-left">
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-PG"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">P.G.</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-KG"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">K.G.</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-nursery"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Nursery</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-transport"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Transport</label>
+                    </div>
+                  </div>
+                  <div class="settings-mid">
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class1"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 1</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class2"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 2</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class3"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 3</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-diet"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Diet</label>
+                    </div>
+                  </div>
+                  <div class="settings-right">
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class4"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 4</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class5"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 5</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-class6"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Class 6</label>
+                    </div>
+                    <div class="inputGroup">
+                      <input
+                        type="text"
+                        id="settings-exam"
+                        required=""
+                        autocomplete="off"
+                      />
+                      <label for="name">Exam</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-bottom">
+                <div class="add-bottom-mid2">
+                  <button type="submit" id="admit-button">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </button>
+                </div>
+                <div class="add-bottom-right">
+                  <button id="cancel-button">
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Cancel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- add div end -->
+      </main>
+    </div>
+
+    <script src="./settings.js"></script>
+  </body>
+</html>
