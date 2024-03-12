@@ -235,6 +235,7 @@ async function updateDebit(patchArray) {
     .then((data) => {
       console.log("Response data:", data);
       fetchStudent();
+      calculateDaysDifference();
       checkbox.checked = true;
       setTimeout(() => {
         checkbox.checked = false;

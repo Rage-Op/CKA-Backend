@@ -246,6 +246,7 @@ async function saveEventHandler() {
         setTimeout(() => {
           notice.style.opacity = "0";
         }, 2000);
+        window.location.reload();
       })
       .catch((error) => {
         console.error("There was a problem with the credit operation:", error);

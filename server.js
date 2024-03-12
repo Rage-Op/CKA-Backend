@@ -17,15 +17,15 @@ app.use(
 );
 
 // Middleware to log incoming requests
-const logRequests = (req, res, next) => {
-  console.log("Request URL:", req.url);
-  console.log("Request Method:", req.method);
-  console.log("Request Headers:", req.headers);
-  console.log("Request Cookies:", req.cookies); // Check if cookies are present
-  next();
-};
+// const logRequests = (req, res, next) => {
+//   console.log("Request URL:", req.url);
+//   console.log("Request Method:", req.method);
+//   console.log("Request Headers:", req.headers);
+//   console.log("Request Cookies:", req.cookies);
+//   next();
+// };
 
-app.use(logRequests);
+// app.use(logRequests);
 
 // Middleware to parse request bodies
 app.use(bodyParser.json());
