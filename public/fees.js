@@ -156,12 +156,13 @@ async function fetchStudent() {
       });
       creditButton.addEventListener("click", (event) => {
         event.preventDefault();
-        const userInput = window.prompt("Please enter your password:");
-        if (userInput !== null) {
-          const password = userInput.trim();
-          if (password === "admin123") {
+        let userCreditInput = window.prompt("Please enter your password:");
+        if (userCreditInput !== null) {
+          let creditPassword = userCreditInput.trim();
+          if (creditPassword === "admin123") {
             console.log("processing credit");
             saveEventHandler();
+            creditPassword = "";
           } else {
             prompt("Invalid password!");
           }
