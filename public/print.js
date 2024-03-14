@@ -482,7 +482,7 @@ searchFormButton.addEventListener("click", (event) => {
       noticeToDefault();
     }, 2000);
   } else {
-    fetchData(searchFormInput.value);
+    fetchData();
   }
 });
 
@@ -510,8 +510,8 @@ async function fetchData(search) {
       formGenderMale.checked = false;
       formGenderFemale.checked = true;
     }
-    formFname.value = data.fname;
-    forMname.value = data.mname;
+    formFname.value = data.fatherName;
+    forMname.value = data.motherName;
     formNationality.value = "";
     formZipCode.value = "";
     if (data.transport == true) {
