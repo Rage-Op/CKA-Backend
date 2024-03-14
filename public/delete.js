@@ -181,6 +181,9 @@ async function deleteEventHandler() {
       setTimeout(() => {
         notice.style.opacity = "0";
       }, 2000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 6000);
     })
     .catch((error) => {
       console.error("There was a problem with the delete operation:", error);

@@ -5,6 +5,12 @@ let checkbox = document.querySelector(".debit-sucess-checkbox");
 let debitDate = document.querySelector("#debit-date");
 let debitButton = document.querySelector("#debit-button");
 let examCbx = document.querySelector("#exam-checkbox");
+let backupButton = document.querySelector("#backup-button");
+
+backupButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  backupStudentData();
+});
 
 debitButton.addEventListener("click", (event) => {
   event.preventDefault();
@@ -65,6 +71,26 @@ async function getPreviousDebitDate() {
   }
 }
 calculateDaysDifference();
+//
+//
+// Backup logic
+async function backupStudentData() {
+  const backupURL = `${hostedURI}/backup`;
+  try {
+    const backupResponse = await fetch(backupURL);
+    if (!backupResponse.ok) {
+      throw new Error("Error backing up student data");
+    }
+    const backupData = await backupResponse.json();
+    console.log(backupData);
+    backupButton.style.backgroundColor = "rgb(37, 37, 170)";
+    backupButton.style.color = "white";
+    console.log("Backup successful");
+  } catch (error) {
+    console.error("Backup failed:", error.message);
+    alert("Backup failed");
+  }
+}
 //
 //
 //
@@ -240,6 +266,9 @@ async function updateDebit(patchArray) {
       setTimeout(() => {
         checkbox.checked = false;
       }, 3000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 6000);
       notice.style.opacity = "100";
       setTimeout(() => {
         notice.style.opacity = "0";

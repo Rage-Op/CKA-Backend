@@ -258,6 +258,9 @@ async function addStudent(nextStudentId, admitDate) {
         notice.style.opacity = "0";
       }, 2000);
       getStudentId();
+      setTimeout(() => {
+        window.location.reload();
+      }, 6000);
     })
     .catch((error) => {
       console.error("There was a problem with the add operation:", error);

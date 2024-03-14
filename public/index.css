@@ -1349,6 +1349,28 @@ body {
   color: #d32f2f;
 }
 
+.add-bottom-mid2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#backup-button {
+  height: 56px;
+  width: 56px;
+  border-radius: 12px;
+  margin-left: 20px;
+  color: rgb(75, 75, 75);
+  border: 1.5px solid gainsboro;
+  transition: all 0.3s ease-in-out;
+}
+
+#backup-button:hover {
+  border: 1.5px solid var(--primary);
+  scale: 1.1;
+  color: var(--primary);
+}
+
 /*  */
 #toPrint {
   border-collapse: collapse;

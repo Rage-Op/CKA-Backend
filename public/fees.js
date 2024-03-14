@@ -1,26 +1,6 @@
 // MAIN LOGIC
 // MAIN LOGIC
 // MAIN LOGIC
-const toggler = document.getElementById("theme-toggle");
-function checkStoredTheme() {
-  let darkTheme = localStorage.getItem("darkTheme");
-  if (darkTheme === "true") {
-    toggler.checked = true;
-    document.body.classList.add("dark");
-  } else {
-    toggler.checked = false;
-    document.body.classList.remove("dark");
-  }
-}
-//
-window.addEventListener("load", () => {
-  if (window.innerWidth < 768) {
-    sideBar.classList.add("close");
-  } else {
-    sideBar.classList.remove("close");
-  }
-});
-//
 let notice = document.querySelector("#sucess-dialog");
 let creditCheckbox = document.querySelector(".credit-sucess-checkbox");
 const searchFormButton = document.querySelector("#formsearch button");
@@ -43,7 +23,7 @@ const localURI = "http://localhost:3000";
 const hostedURI = "https://cka-backend.onrender.com";
 let fetchedData;
 let globalStudentId;
-
+// event listeners
 cancelButton.addEventListener("click", (event) => {
   event.preventDefault();
   searchFormInput.value = "";
@@ -57,7 +37,7 @@ cancelButton.addEventListener("click", (event) => {
   feesStudentId.textContent = "...";
   photoUrl.style.backgroundImage = 'url("./content/user-icon.jpg")';
 });
-
+//
 searchFormButton.addEventListener("click", (event) => {
   event.preventDefault();
   if (searchFormInput.value === "") {
@@ -71,8 +51,6 @@ searchFormButton.addEventListener("click", (event) => {
     searchFormInput.value = "";
   }
 });
-//
-//
 // get date
 async function getBsDate() {
   let dateURL = `${hostedURI}/bs-date`;
@@ -188,8 +166,6 @@ async function fetchStudent() {
   }
 }
 //
-//
-//
 async function saveEventHandler() {
   document.querySelector("#credit-chx").style.backgroundColor = "";
   if (creditAmount.value == "" || creditBill.value == "") {
@@ -241,13 +217,15 @@ async function saveEventHandler() {
         setTimeout(() => {
           creditCheckbox.checked = false;
         }, 3000);
+        setTimeout(() => {
+          window.location.reload();
+        }, 6000);
         console.log("Response data:", data);
         notice.style.opacity = "100";
         fetchStudent();
         setTimeout(() => {
           notice.style.opacity = "0";
         }, 2000);
-        window.location.reload();
       })
       .catch((error) => {
         console.error("There was a problem with the credit operation:", error);
@@ -275,6 +253,27 @@ function noticeToDefault() {
 // MAIN LOGIC
 // MAIN LOGIC
 // MAIN LOGIC
+
+//
+const toggler = document.getElementById("theme-toggle");
+function checkStoredTheme() {
+  let darkTheme = localStorage.getItem("darkTheme");
+  if (darkTheme === "true") {
+    toggler.checked = true;
+    document.body.classList.add("dark");
+  } else {
+    toggler.checked = false;
+    document.body.classList.remove("dark");
+  }
+}
+//
+window.addEventListener("load", () => {
+  if (window.innerWidth < 768) {
+    sideBar.classList.add("close");
+  } else {
+    sideBar.classList.remove("close");
+  }
+});
 
 const sideLinks = document.querySelectorAll(
   ".sidebar .side-menu li a:not(.logout)"

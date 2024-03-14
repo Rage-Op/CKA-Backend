@@ -196,6 +196,21 @@ app.get("/students/search/:studentId", (req, res) => {
     });
 });
 
+// backup
+app.get("/backup", async (req, res) => {
+  try {
+    console.log("backup requested");
+    const students = await db.collection("students").find().toArray();
+    await db.collection("backup").deleteMany({});
+    await db.collection("backup").insertMany(students);
+    res.status(200).json({ message: "Backup successful" });
+    console.log("backup successful");
+  } catch (err) {
+    console.error("Error during backup:", err);
+    res.status(500).json({ error: "Backup failed" });
+  }
+});
+
 // post requests
 // add one
 app.post("/students/add", (req, res) => {
