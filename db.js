@@ -1,6 +1,6 @@
 const { MongoClient } = require("mongodb");
 const atlasURI =
-  "mongodb+srv://pravinyt1122334455:9NBV4rsQuiTneW2u@cka-db.jgmfqho.mongodb.net/?retryWrites=true&w=majority&appName=CKA-DB";
+  "mongodb+srv://pravinyt1122334455:testing123@development.vc5a8.mongodb.net/?retryWrites=true&w=majority&appName=Development";
 const localDb = "mongodb://localhost:27017/CKA-DB";
 
 let dbConnection;
