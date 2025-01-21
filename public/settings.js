@@ -50,18 +50,18 @@ cancelButton.addEventListener("click", async (event) => {
     }
 
     let data = await response.json();
-    settingsPG.value = data.name;
-    settingsKG.value = data.DOB;
-    settingsNursery.value = data.fatherName;
-    settingsClass1.value = data.motherName;
-    settingsClass2.value = data.contact;
-    settingsClass3.value = data.address;
-    settingsClass4.value = data.studentId;
-    settingsClass5.value = data.admitDate;
-    settingsClass6.value = data.transport;
-    settingsTransport.value = data.diet;
-    settingsDiet.value = data.class;
-    settingsExam.value = data.class;
+    settingsPG.value = data[0].monthlyPG;
+    settingsKG.value = data[0].monthlyKG;
+    settingsNursery.value = data[0].monthlyNursery;
+    settingsClass1.value = data[0].monthly1;
+    settingsClass2.value = data[0].monthly2;
+    settingsClass3.value = data[0].monthly3;
+    settingsClass4.value = data[0].monthly4;
+    settingsClass5.value = data[0].monthly5;
+    settingsClass6.value = data[0].monthly6;
+    settingsTransport.value = data[0].transport;
+    settingsDiet.value = data[0].diet;
+    settingsExam.value = data[0].exam;
   } catch (error) {
     console.log(error);
     settingsPG.value = "!";
