@@ -1,7 +1,8 @@
 import { MongoClient } from "mongodb";
 
 const atlasURI =
-  "mongodb+srv://pravinyt1122334455:testing123@development.vc5a8.mongodb.net/?retryWrites=true&w=majority&appName=Development";
+  "mongodb+srv://pravinyt1122334455:testing123@development.vc5a8.mongodb.net/CKA?retryWrites=true&w=majority&appName=Development";
+// ........................................................................|| this matters for the right database
 const localDb = "mongodb://localhost:27017/CKA-DB";
 
 let dbConnection;

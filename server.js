@@ -1,11 +1,15 @@
-const express = require("express");
-const { connectToDb, getDb } = require("./db");
-const { ObjectId } = require("mongodb");
-const bodyParser = require("body-parser");
-const session = require("express-session");
-const NepaliDate = require("nepali-datetime");
-const path = require("path");
-const cors = require("cors");
+import express from "express";
+import { connectToDb, getDb } from "./db.js";
+import { ObjectId } from "mongodb";
+import bodyParser from "body-parser";
+import session from "express-session";
+import NepaliDate from "nepali-datetime";
+import path from "path";
+import cors from "cors";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -46,12 +50,24 @@ app.use(
 
 // Middleware to check if the user is logged in
 const checkLogin = (req, res, next) => {
-  if (req.url.startsWith("/content")) {
+  // Allow access to static content and public assets
+  if (req.url.startsWith("/content") || req.url.startsWith("/assets")) {
     return next();
   }
+
   if (req.session && req.session.loggedIn) {
     next();
   } else {
+    // For API calls, return 401 instead of redirecting
+    if (
+      req.url.startsWith("/students") ||
+      req.url.startsWith("/settings") ||
+      req.url.startsWith("/debit") ||
+      req.url.startsWith("/backup") ||
+      req.url.startsWith("/bs-date")
+    ) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     console.log("redirected to login");
     res.redirect("/");
   }
@@ -74,10 +90,10 @@ app.post("/login", (req, res) => {
   console.log("password: ", password);
   if (username === "admin123" && password === "password123") {
     req.session.loggedIn = true;
-    res.redirect("/index.html");
-    console.log("redirected to index");
+    res.status(200).json({ success: true, message: "Login successful" });
+    console.log("login successful");
   } else {
-    res.redirect("/");
+    res.status(401).json({ success: false, message: "Invalid credentials" });
   }
 });
 
@@ -85,10 +101,10 @@ app.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     console.log("logged out");
     if (err) {
-      return res.redirect("/login.html");
+      return res.status(500).json({ success: false, message: "Logout failed" });
     }
     res.clearCookie("connect.sid");
-    res.redirect("/");
+    res.status(200).json({ success: true, message: "Logout successful" });
   });
 });
 
@@ -100,12 +116,52 @@ app.get("/dashboard", checkLogin, (req, res) => {
 });
 
 // db connection
+let db;
 connectToDb((err) => {
   if (!err) {
     app.listen(3000, () => {
       console.log("Server is up and listening on port 3000");
     });
     db = getDb();
+
+    // Check if settings collection exists and has documents, if not create default settings
+    db.collection("settings")
+      .find()
+      .toArray()
+      .then((settings) => {
+        if (settings.length === 0) {
+          console.log(
+            "Settings collection is empty, creating default settings..."
+          );
+          const defaultSettings = {
+            monthlyPG: 1500,
+            monthlyKG: 1600,
+            monthlyNursery: 1700,
+            monthly1: 1800,
+            monthly2: 1900,
+            monthly3: 2000,
+            monthly4: 2100,
+            monthly5: 2200,
+            monthly6: 2300,
+            transport: 500,
+            diet: 300,
+            exam: 200,
+          };
+
+          return db.collection("settings").insertOne(defaultSettings);
+        } else {
+          console.log("Settings collection already has data");
+          return Promise.resolve();
+        }
+      })
+      .then((result) => {
+        if (result && result.insertedId) {
+          console.log("Default settings created successfully");
+        }
+      })
+      .catch((err) => {
+        console.error("Error checking/creating settings:", err);
+      });
   } else {
     console.log("connection failed");
   }
@@ -315,10 +371,14 @@ app.delete("/students/delete/:studentId", (req, res) => {
     });
 });
 
-// Check login before serving static files
-app.use(express.static(path.join(__dirname, "public")));
+// Serve React static files in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "CKA React App/dist")));
 
-// // Conditionally serve static files based on the session state
-// app.get("/:filename", checkLogin, (req, res) => {
-//   res.sendFile(path.join(__dirname, "public", req.params.filename));
-// });
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "CKA React App/dist", "index.html"));
+  });
+} else {
+  // Development: serve old public folder
+  app.use(express.static(path.join(__dirname, "public")));
+}
