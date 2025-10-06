@@ -7,7 +7,7 @@ const localDb = "mongodb://localhost:27017/CKA-DB";
 let dbConnection;
 
 export const connectToDb = (cb) => {
-  MongoClient.connect(localDb)
+  MongoClient.connect(atlasURI)
     .then((client) => {
       console.log("database connected");
       dbConnection = client.db();
