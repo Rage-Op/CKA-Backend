@@ -217,19 +217,19 @@ let nextButton = document.querySelector("#print-next-button");
 let feesTableBody = document.querySelector("#fee-due-table-body");
 let printStudentId = document.querySelector("#print-studentId");
 let printDate = document.querySelector("#print-date");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 let globalData;
 let countBatch = 0;
 window.addEventListener("load", async () => {
-  let getURL = `${hostedURI}/ascending-students`;
+  let getURL = `${localURI}/ascending-students`;
   let response = await fetch(getURL);
   let data = await response.json();
   globalData = data;
   updateStudentId(countBatch);
   generateTable(countBatch);
   countBatch += 12;
-  let dateURL = `${hostedURI}/bs-date`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];
@@ -259,13 +259,13 @@ function updateStudentId(countBatch) {
 }
 
 async function generateTable(studentBatch) {
-  let dateURL = `${hostedURI}/bs-date`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];
   let parts = datePart.split("-");
   let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-  let getURL = `${hostedURI}/ascending-students`;
+  let getURL = `${localURI}/ascending-students`;
   let response = await fetch(getURL);
   let data = await response.json();
   for (let i = studentBatch; i < studentBatch + 12; i += 2) {
@@ -489,7 +489,7 @@ searchFormButton.addEventListener("click", (event) => {
 async function fetchData(search) {
   //
   studentId = Number(searchFormInput.value);
-  let URL = `${hostedURI}/students/search`;
+  let URL = `${localURI}/students/search`;
   try {
     let response = await fetch(`${URL}/${studentId}`);
     if (!response.ok) {

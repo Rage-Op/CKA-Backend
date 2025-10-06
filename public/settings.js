@@ -36,12 +36,12 @@ let settingsDiet = document.querySelector("#settings-diet");
 let settingsExam = document.querySelector("#settings-exam");
 let saveButton = document.querySelector("#admit-button");
 let cancelButton = document.querySelector("#cancel-button");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 
 cancelButton.addEventListener("click", async (event) => {
   event.preventDefault();
-  let URL = `${hostedURI}/settings`;
+  let URL = `${localURI}/settings`;
 
   try {
     let response = await fetch(`${URL}`);
@@ -82,7 +82,7 @@ cancelButton.addEventListener("click", async (event) => {
 fetchSettings();
 
 async function fetchSettings() {
-  let URL = `${hostedURI}/settings`;
+  let URL = `${localURI}/settings`;
 
   try {
     let response = await fetch(`${URL}`);
@@ -138,7 +138,7 @@ async function saveEventHandler(event) {
     exam: Number(settingsExam.value),
     diet: Number(settingsDiet.value),
   };
-  const patchURL = `${hostedURI}/settings`;
+  const patchURL = `${localURI}/settings`;
   const options = {
     method: "PATCH",
     headers: {

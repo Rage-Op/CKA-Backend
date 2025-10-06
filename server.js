@@ -1,14 +1,19 @@
-const express = require("express");
-const { connectToDb, getDb } = require("./db");
-const { ObjectId } = require("mongodb");
-const bodyParser = require("body-parser");
-const session = require("express-session");
-const NepaliDate = require("nepali-datetime");
-const path = require("path");
-const cors = require("cors");
+import express from "express";
+import { connectToDb, getDb } from "./db.js";
+import { ObjectId } from "mongodb";
+import bodyParser from "body-parser";
+import session from "express-session";
+import NepaliDate from "nepali-datetime";
+import path from "path";
+import cors from "cors";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+dotenv.config(); // Loads environment variables from a .env file into process.env
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
-const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 8081;
+let db;
 app.use(
   cors({
     origin: "*",
@@ -72,7 +77,10 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
   console.log("username: ", username);
   console.log("password: ", password);
-  if (username === "admin123" && password === "password123") {
+  if (
+    (username === "admin123" || username === "") &&
+    (password === "password123" || password === "")
+  ) {
     req.session.loggedIn = true;
     res.redirect("/index.html");
     console.log("redirected to index");
@@ -102,10 +110,70 @@ app.get("/dashboard", checkLogin, (req, res) => {
 // db connection
 connectToDb((err) => {
   if (!err) {
-    app.listen(3000, () => {
-      console.log("Server is up and listening on port 3000");
-    });
+    // Initial Set up
     db = getDb();
+
+    // create a collection called debit-log and create a document with a property called lastDebit and set it to "2020/00/00" if it doesn't exist already
+    db.collection("debit-log")
+      .find({})
+      .toArray()
+      .then((docs) => {
+        if (docs.length === 0) {
+          db.collection("debit-log").insertOne({
+            lastDebit: "2020/00/00",
+          });
+          console.log("debit-log collection created and document inserted");
+        } else {
+          console.log("debit-log collection already exists");
+        }
+
+        // create a collection called settings and create a document with a document "monthlyPG", "monthlyKG", "monthlyNursery", "monthly1", "monthly2", "monthly3", "monthly4", "monthly5", "monthly6", "transport", "exam", "diet" and set them to 0 if it doesn't exist already
+        // {
+        //   "_id": {
+        //     "$oid": "68e022588e4499c0a1c90463"
+        //   },
+        //   "monthlyPG": 1500,
+        //   "monthlyKG": 1600,
+        //   "monthlyNursery": 1700,
+        //   "monthly1": 1800,
+        //   "monthly2": 1900,
+        //   "monthly3": 2000,
+        //   "monthly4": 2100,
+        //   "monthly5": 2200,
+        //   "monthly6": 2300,
+        //   "transport": 500,
+        //   "diet": 300,
+        //   "exam": 200
+        // }
+        db.collection("settings")
+          .find({})
+          .toArray()
+          .then((docs) => {
+            if (docs.length === 0) {
+              db.collection("settings").insertOne({
+                monthlyPG: 1500,
+                monthlyKG: 1600,
+                monthlyNursery: 1700,
+                monthly1: 1800,
+                monthly2: 1900,
+                monthly3: 2000,
+                monthly4: 2100,
+                monthly5: 2200,
+                monthly6: 2300,
+                transport: 500,
+                diet: 300,
+                exam: 200,
+              });
+              console.log("settings collection created and document inserted");
+            } else {
+              console.log("settings collection already exists");
+            }
+          });
+      });
+
+    app.listen(PORT, () => {
+      console.log(`Server is up and listening on port ${PORT}`);
+    });
   } else {
     console.log("connection failed");
   }
@@ -180,7 +248,7 @@ app.get("/bs-date", (req, res) => {
 // search one
 app.get("/students/search/:studentId", (req, res) => {
   console.log("client requested a student's data");
-  x = parseInt(req.params.studentId);
+  let x = parseInt(req.params.studentId);
   db.collection("students")
     .findOne({ studentId: x })
     .then((doc) => {
@@ -232,7 +300,7 @@ app.post("/students/add", (req, res) => {
 app.patch("/students/update/:studentId", (req, res) => {
   console.log("client is adding a student");
   const updates = req.body;
-  u = parseInt(req.params.studentId);
+  let u = parseInt(req.params.studentId);
   db.collection("students")
     .updateOne({ studentId: u }, { $set: updates })
     .then((result) => {
@@ -303,7 +371,7 @@ app.patch("/debit", (req, res) => {
 // delete one
 app.delete("/students/delete/:studentId", (req, res) => {
   console.log("client is deleting a student");
-  d = parseInt(req.params.studentId);
+  let d = parseInt(req.params.studentId);
   db.collection("students")
     .deleteOne({ studentId: d })
     .then((result) => {

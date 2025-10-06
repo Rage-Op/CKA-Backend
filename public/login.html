@@ -142,11 +142,11 @@
           event.preventDefault();
           const username = document.getElementById("usernameInput").value;
           const password = document.getElementById("passwordInput").value;
-          const localURI = "http://localhost:3000";
+          const localURI = window.location.origin;
           const hostedURI = "https://cka-backend.onrender.com";
 
           try {
-            const response = await fetch(`${hostedURI}/login`, {
+            const response = await fetch(`${localURI}/login`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -156,7 +156,7 @@
 
             if (response.ok) {
               // Redirect or perform other actions after successful login
-              window.location.href = `${hostedURI}/index.html`;
+              window.location.href = `${localURI}/index.html`;
               console.log("Login Sucessfull");
             } else {
               // Handle login error

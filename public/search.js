@@ -40,7 +40,7 @@ let resultCredit = document.querySelector("#result-credit");
 let resultDebit = document.querySelector("#result-debit");
 let resultDue = document.querySelector("#result-due");
 let photoUrl = document.querySelector(".photo");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 //
 searchFormButton.addEventListener("click", (event) => {
@@ -63,7 +63,7 @@ searchFormButton.addEventListener("click", (event) => {
 async function fetchStudent() {
   // studentId = searchFormInput.value;
   studentId = Number(searchFormInput.value);
-  let URL = `${hostedURI}/students/search`;
+  let URL = `${localURI}/students/search`;
   try {
     let response = await fetch(`${URL}/${studentId}`);
     if (!response.ok) {

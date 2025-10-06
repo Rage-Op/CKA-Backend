@@ -32,7 +32,7 @@ debitButton.addEventListener("click", (event) => {
 //
 // previous debit logic
 async function getBsDate() {
-  let dateURL = `${hostedURI}/bs-date`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];
@@ -42,32 +42,83 @@ async function getBsDate() {
 }
 
 async function calculateDaysDifference() {
-  let dateURL = `${hostedURI}/bs-date`;
-  let responseDate = await fetch(dateURL);
-  let datetimeStr = await responseDate.json();
-  let datePart = datetimeStr.split(" ")[0];
-  let parts = datePart.split("-");
-  let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-  let dateBString = await getPreviousDebitDate();
-  let [yearA, monthA, dayA] = formattedDate.split("/");
-  let [yearB, monthB, dayB] = dateBString.split("/");
-  let daysA = parseInt(yearA) * 365 + parseInt(monthA) * 30 + parseInt(dayA);
-  let daysB = parseInt(yearB) * 365 + parseInt(monthB) * 30 + parseInt(dayB);
-  let daysPassed = daysA - daysB;
-  debitDate.textContent = `${daysPassed} days ago`;
+  try {
+    let dateURL = `${localURI}/bs-date`;
+    let responseDate = await fetch(dateURL);
+    if (!responseDate.ok) throw new Error("Failed to fetch current date");
+    let datetimeStr = await responseDate.json();
+
+    if (!datetimeStr || typeof datetimeStr !== "string") {
+      debitDate.textContent = "Date unavailable";
+      return;
+    }
+
+    let datePart = datetimeStr.split(" ")[0];
+    let parts = datePart.split("-");
+    if (parts.length !== 3) {
+      debitDate.textContent = "Date format error";
+      return;
+    }
+    let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
+
+    let dateBString = await getPreviousDebitDate();
+    if (
+      !dateBString ||
+      typeof dateBString !== "string" ||
+      dateBString.split("/").length !== 3
+    ) {
+      debitDate.textContent = "No previous debit";
+      return;
+    }
+
+    let [yearA, monthA, dayA] = formattedDate.split("/").map(Number);
+    let [yearB, monthB, dayB] = dateBString.split("/").map(Number);
+
+    if (
+      isNaN(yearA) ||
+      isNaN(monthA) ||
+      isNaN(dayA) ||
+      isNaN(yearB) ||
+      isNaN(monthB) ||
+      isNaN(dayB)
+    ) {
+      debitDate.textContent = "Date parse error";
+      return;
+    }
+
+    let daysA = yearA * 365 + monthA * 30 + dayA;
+    let daysB = yearB * 365 + monthB * 30 + dayB;
+    let daysPassed = daysA - daysB;
+    debitDate.textContent = `${daysPassed} days ago`;
+  } catch (error) {
+    console.error("Error in calculateDaysDifference:", error);
+    debitDate.textContent = "Error calculating days";
+  }
 }
 
 async function getPreviousDebitDate() {
-  const logURL = `${hostedURI}/debit-log`;
+  const logURL = `${localURI}/debit-log`;
   try {
-    let response = await fetch(`${logURL}`);
+    let response = await fetch(logURL);
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
     let data = await response.json();
-    return data[0].lastDebit;
+    // Check if data is an array and has at least one element with lastDebit
+    if (
+      Array.isArray(data) &&
+      data.length > 0 &&
+      data[0] &&
+      data[0].lastDebit
+    ) {
+      return data[0].lastDebit;
+    } else {
+      // Handle missing or malformed data
+      return null;
+    }
   } catch (error) {
     console.log(error);
+    return null;
   }
 }
 calculateDaysDifference();
@@ -75,7 +126,7 @@ calculateDaysDifference();
 //
 // Backup logic
 async function backupStudentData() {
-  const backupURL = `${hostedURI}/backup`;
+  const backupURL = `${localURI}/backup`;
   try {
     const backupResponse = await fetch(backupURL);
     if (!backupResponse.ok) {
@@ -95,8 +146,8 @@ async function backupStudentData() {
 //
 //
 async function debitFetchStudent() {
-  let URL = `${hostedURI}/students`;
-  let dateURL = `${hostedURI}/bs-date`;
+  let URL = `${localURI}/students`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];
@@ -212,9 +263,9 @@ async function debitFetchStudent() {
 //
 //
 async function updateDebit(patchArray) {
-  const patchURL = `${hostedURI}/debit`;
-  const patchDebitDateURL = `${hostedURI}/debit-log`;
-  let dateURL = `${hostedURI}/bs-date`;
+  const patchURL = `${localURI}/debit`;
+  const patchDebitDateURL = `${localURI}/debit-log`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];

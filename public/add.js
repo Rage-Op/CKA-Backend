@@ -38,7 +38,7 @@ let addDiet = document.querySelector("#add-diet");
 let addClass = document.querySelector("#add-class");
 let addGender = document.querySelector("#add-gender");
 let photoUrl = document.querySelector(".photo");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 let nextStudentId;
 let settings;
@@ -47,7 +47,7 @@ let settings;
 // To get next student ID.
 getStudentId();
 async function getStudentId() {
-  let getURL = `${hostedURI}/students`;
+  let getURL = `${localURI}/students`;
   try {
     let response = await fetch(getURL);
     if (!response.ok) {
@@ -60,7 +60,7 @@ async function getStudentId() {
       nextStudentId = Number(data[0].studentId) + 1;
     }
     addStudentId.textContent = nextStudentId;
-    let dateURL = `${hostedURI}/bs-date`;
+    let dateURL = `${localURI}/bs-date`;
     let responseDate = await fetch(dateURL);
     let datetimeStr = await responseDate.json();
     const datePart = datetimeStr.split(" ")[0];
@@ -119,8 +119,8 @@ cancelButton.addEventListener("click", (event) => {
 //
 //
 async function fetchStudent() {
-  let getURL = `${hostedURI}/students`;
-  let getSettingsURL = `${hostedURI}/settings`;
+  let getURL = `${localURI}/students`;
+  let getSettingsURL = `${localURI}/settings`;
   try {
     let response = await fetch(getSettingsURL);
     if (!response.ok) {
@@ -157,7 +157,7 @@ async function fetchStudent() {
 }
 
 async function addStudent(nextStudentId, admitDate) {
-  let postURL = `${hostedURI}/students/add`;
+  let postURL = `${localURI}/students/add`;
   let toSetMonthlyFees;
   let toSetTransportFees;
   let toSetDietFees;

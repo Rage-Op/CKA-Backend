@@ -19,7 +19,7 @@ let creditButton = document.querySelector("#admit-button");
 let cancelButton = document.querySelector("#cancel-button");
 const debitColumn = document.querySelector("#debit-column");
 const creditColumn = document.querySelector("#credit-column");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 let fetchedData;
 let globalStudentId;
@@ -53,7 +53,7 @@ searchFormButton.addEventListener("click", (event) => {
 });
 // get date
 async function getBsDate() {
-  let dateURL = `${hostedURI}/bs-date`;
+  let dateURL = `${localURI}/bs-date`;
   let responseDate = await fetch(dateURL);
   let datetimeStr = await responseDate.json();
   let datePart = datetimeStr.split(" ")[0];
@@ -85,7 +85,7 @@ getBsDate();
 async function fetchStudent() {
   debitColumn.innerHTML = "";
   creditColumn.innerHTML = "";
-  let URL = `${hostedURI}/students/search`;
+  let URL = `${localURI}/students/search`;
   if (!globalStudentId) {
     console.log("no student Id to search for");
   } else {
@@ -195,7 +195,7 @@ async function saveEventHandler() {
         credit: totalCreditAmount,
       },
     };
-    const patchURL = `${hostedURI}/students/update/${globalStudentId}`;
+    const patchURL = `${localURI}/students/update/${globalStudentId}`;
     const options = {
       method: "PATCH",
       headers: {

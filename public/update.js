@@ -40,7 +40,7 @@ let updateStudentId = document.querySelector("#add-studentId");
 let updateAdmitDate = document.querySelector("#add-admitdate");
 let saveButton = document.querySelector("#admit-button");
 let cancelButton = document.querySelector("#cancel-button");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 let globalData;
 //
@@ -80,7 +80,7 @@ searchFormButton.addEventListener("click", (event) => {
 //
 async function fetchStudent() {
   studentId = searchFormInput.value;
-  let URL = `${hostedURI}/students/search`;
+  let URL = `${localURI}/students/search`;
   try {
     let response = await fetch(`${URL}/${studentId}`);
     if (!response.ok) {
@@ -135,7 +135,6 @@ async function saveEventHandler(event) {
     Number(updateOldDue.value);
   let newDebitAmount = globalData.debitAmount;
   newDebitAmount[0].amount = Number(updateOldDue.value);
-  //
   let newFeesCredit =
     globalData.fees.credit -
     globalData.creditAmount[0].amount +
@@ -161,7 +160,7 @@ async function saveEventHandler(event) {
     transport: updateTransport.checked,
     diet: updateDiet.checked,
   };
-  const patchURL = `${hostedURI}/students/update/${studentId}`;
+  const patchURL = `${localURI}/students/update/${studentId}`;
   const options = {
     method: "PATCH",
     headers: {

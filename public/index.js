@@ -19,7 +19,7 @@ const indexStudents = document.querySelector("#index-students");
 const indexDue = document.querySelector("#index-due");
 const listItems = document.querySelectorAll(".autosave-items");
 const itemsCheck = document.querySelectorAll(".task-complete");
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 
 itemsCheck.forEach((item) => {
@@ -45,7 +45,7 @@ setInterval(() => {
 async function fetchData() {
   try {
     // Fetch student data
-    let response = await fetch(`${hostedURI}/students`, {
+    let response = await fetch(`${localURI}/students`, {
       method: "GET",
       credentials: "include",
     });
@@ -62,7 +62,7 @@ async function fetchData() {
     findTop3StudentsWithHighestDue(data);
 
     // Fetch date data
-    let dateURL = `${hostedURI}/bs-date`;
+    let dateURL = `${localURI}/bs-date`;
     let responseDate = await fetch(dateURL);
     if (!responseDate.ok) {
       throw new Error("Failed to fetch date data");
@@ -125,7 +125,7 @@ function findTop3StudentsWithHighestDue(students) {
 
 async function logout() {
   try {
-    let response = await fetch(`${hostedURI}/logout`, {
+    let response = await fetch(`${localURI}/logout`, {
       method: "POST",
       credentials: "include",
     });

@@ -41,7 +41,7 @@ let resultDebit = document.querySelector("#result-debit");
 let resultDue = document.querySelector("#result-due");
 let photoUrl = document.querySelector(".photo");
 let idToBeDeleted;
-const localURI = "http://localhost:3000";
+const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
 let cancelButton = document.querySelector("#admit-button");
 let deleteButton = document.querySelector("#cancel-button");
@@ -78,7 +78,7 @@ searchFormButton.addEventListener("click", (event) => {
 //
 async function fetchStudent() {
   studentId = searchFormInput.value;
-  let URL = `${hostedURI}/students/search`;
+  let URL = `${localURI}/students/search`;
   try {
     let response = await fetch(`${URL}/${studentId}`);
     if (!response.ok) {
@@ -164,7 +164,7 @@ async function deleteEventHandler() {
     }
   });
   console.log(studentId);
-  const deleteURL = `${hostedURI}/students/delete/${studentId}`;
+  const deleteURL = `${localURI}/students/delete/${studentId}`;
   const options = {
     method: "DELETE",
   };
