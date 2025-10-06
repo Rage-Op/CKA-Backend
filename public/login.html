@@ -151,19 +151,23 @@
               headers: {
                 "Content-Type": "application/json",
               },
+              credentials: "include", // Important for cookies
               body: JSON.stringify({ username, password }),
             });
 
-            if (response.ok) {
-              // Redirect or perform other actions after successful login
-              window.location.href = `${localURI}/index.html`;
-              console.log("Login Sucessfull");
+            const data = await response.json();
+
+            if (data.success) {
+              // Store token in localStorage for API calls
+              localStorage.setItem("token", data.token);
+              window.location.href = "/index.html";
+              console.log("Login Successful");
             } else {
-              // Handle login error
-              alert("Invalid username or password");
+              alert(data.message || "Invalid username or password");
             }
           } catch (error) {
             console.error("Error:", error);
+            alert("Login failed. Please try again.");
           }
         });
     </script>

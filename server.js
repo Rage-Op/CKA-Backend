@@ -2,7 +2,9 @@ import express from "express";
 import { connectToDb, getDb } from "./db.js";
 import { ObjectId } from "mongodb";
 import bodyParser from "body-parser";
-import session from "express-session";
+import cookieParser from "cookie-parser";
+// import session from "express-session"; // Removed - using JWT instead
+import jwt from "jsonwebtoken";
 import NepaliDate from "nepali-datetime";
 import path from "path";
 import cors from "cors";
@@ -12,7 +14,11 @@ dotenv.config(); // Loads environment variables from a .env file into process.en
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8080;
+const JWT_SECRET =
+  process.env.SESSION_SECRET ||
+  "your-super-secret-jwt-key-change-this-in-production";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "24h";
 let db;
 app.use(
   cors({
@@ -36,40 +42,76 @@ app.use(
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Enable session support
-app.use(
-  session({
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: 1000 * 60 * 60, // Cookie expires after 1 hour (in milliseconds)
-    },
-    rolling: true, // Reset expiry of cookie on every request
-  })
-);
+// Middleware to parse cookies
+app.use(cookieParser());
 
-// Middleware to check if the user is logged in
+// JWT Authentication Middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Enable session support
+// app.use(
+//   session({
+//     secret: "your-secret-key",
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: {
+//       maxAge: 1000 * 60 * 60, // Cookie expires after 1 hour (in milliseconds)
+//     },
+//     rolling: true, // Reset expiry of cookie on every request
+//   })
+// );
+
+// Middleware to check if the user is logged in (for HTML routes)
 const checkLogin = (req, res, next) => {
   if (req.url.startsWith("/content")) {
     return next();
   }
-  if (req.session && req.session.loggedIn) {
-    next();
-  } else {
-    console.log("redirected to login");
-    res.redirect("/");
+
+  const token = req.cookies?.token;
+  // console.log(req.cookies);
+  if (!token) {
+    return res.redirect("/");
   }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.redirect("/");
+    }
+    req.user = user;
+    next();
+  });
 };
 
 // Route for the login page
 app.get("/", (req, res) => {
-  if (req.session && req.session.loggedIn) {
-    res.redirect("/index.html");
-    console.log("already logged in");
-  } else {
-    res.sendFile(path.join(__dirname, "public", "login.html"));
+  const token = req.cookies?.token;
+
+  if (token) {
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+      if (!err) {
+        res.redirect("/index.html");
+        console.log("already logged in");
+        return;
+      }
+    });
   }
+  res.sendFile(path.join(__dirname, "public", "login.html"));
+  console.log("redirected to login");
 });
 
 // Route to handle login
@@ -77,26 +119,64 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
   console.log("username: ", username);
   console.log("password: ", password);
+
   if (
     (username === "admin123" || username === "") &&
     (password === "password123" || password === "")
   ) {
-    req.session.loggedIn = true;
-    res.redirect("/index.html");
-    console.log("redirected to index");
+    // Create JWT token
+    const token = jwt.sign({ username: username, userId: 1 }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    // Set token as HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // Set to false for development
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: "lax",
+    });
+
+    res.json({
+      success: true,
+      message: "Login successful",
+      token: token,
+    });
+    console.log("Login successful, token generated");
   } else {
-    res.redirect("/");
+    res.status(401).json({
+      success: false,
+      message: "Invalid credentials",
+    });
   }
 });
 
+// Logout route
 app.post("/logout", (req, res) => {
-  req.session.destroy((err) => {
-    console.log("logged out");
-    if (err) {
-      return res.redirect("/login.html");
-    }
-    res.clearCookie("connect.sid");
-    res.redirect("/");
+  res.clearCookie("token");
+  res.json({ success: true, message: "Logged out successfully" });
+});
+
+// Verify token endpoint
+app.get("/verify-token", authenticateToken, (req, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+    message: "Token is valid",
+  });
+});
+
+// Configuration endpoint for frontend
+app.get("/config", (req, res) => {
+  let apiBaseUrl;
+  if (process.env.NODE_ENV === "production") {
+    apiBaseUrl = `https://cka-backend.onrender.com`;
+  } else {
+    apiBaseUrl = `http://localhost:${PORT}`;
+  }
+  res.json({
+    apiBaseUrl: apiBaseUrl,
+    environment: process.env.NODE_ENV || "development",
   });
 });
 
