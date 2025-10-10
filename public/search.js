@@ -19,6 +19,8 @@ window.addEventListener("load", () => {
   } else {
     sideBar.classList.remove("close");
   }
+  // Load all students when the page loads
+  fetchAllStudents();
 });
 //
 let notice = document.querySelector("#sucess-dialog");
@@ -42,6 +44,7 @@ let resultDue = document.querySelector("#result-due");
 let photoUrl = document.querySelector(".photo");
 const localURI = window.location.origin;
 const hostedURI = "https://cka-backend.onrender.com";
+const studentsTableBody = document.querySelector("#students-table-body");
 //
 searchFormButton.addEventListener("click", (event) => {
   event.preventDefault();
@@ -59,6 +62,103 @@ searchFormButton.addEventListener("click", (event) => {
     fetchStudent();
   }
 });
+
+// Fetch all students in ascending order
+async function fetchAllStudents() {
+  try {
+    let URL = `${localURI}/ascending-students`;
+    let response = await fetch(URL);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch students data");
+    }
+
+    let students = await response.json();
+    displayStudentsTable(students);
+  } catch (error) {
+    console.error("Error fetching all students:", error);
+    notice.innerHTML = "<h4>Failed!</h4><p>Could not load students</p>";
+    notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
+    notice.style.border = "1px solid #D32F2F";
+    notice.style.opacity = "100";
+    setTimeout(() => {
+      notice.style.opacity = "0";
+      noticeToDefault();
+    }, 2000);
+  }
+}
+
+// Display students in the table
+function displayStudentsTable(students) {
+  // Clear existing table content
+  studentsTableBody.innerHTML = "";
+
+  // Add each student to the table
+  students.forEach((student) => {
+    const due = student.fees.debit - student.fees.credit;
+
+    const row = document.createElement("tr");
+    row.dataset.studentId = student.studentId;
+
+    row.innerHTML = `
+      <td>${student.studentId}</td>
+      <td>${student.name}</td>
+      <td>${student.class}</td>
+      <td>${student.contact}</td>
+      <td>${student.address}</td>
+      <td>${student.gender}</td>
+      <td class="credit">Npr. ${student.fees.credit}</td>
+      <td class="debit">Npr. ${student.fees.debit}</td>
+      <td class="due">Npr. ${due}</td>
+    `;
+
+    // Add click event to show student details
+    row.addEventListener("click", () => {
+      displayStudentDetails(student);
+    });
+
+    studentsTableBody.appendChild(row);
+  });
+}
+
+// Display student details in the top section
+function displayStudentDetails(student) {
+  resultName.textContent = student.name;
+  resultDOB.textContent = student.DOB;
+  resultFname.textContent = student.fatherName;
+  resultMname.textContent = student.motherName;
+  resultContact.textContent = student.contact;
+  resultAddress.textContent = student.address;
+  resultClass.textContent = student.class;
+  resultAdmitDate.textContent = student.admitDate;
+  resultTransport.textContent = student.transport;
+  resultDiet.textContent = student.diet;
+  resultGender.textContent = student.gender;
+  resultStudentId.textContent = student.studentId;
+  resultCredit.textContent = student.fees.credit;
+  resultDebit.textContent = student.fees.debit;
+  resultDue.textContent = student.fees.debit - student.fees.credit;
+
+  if (!student.photo) {
+    photoUrl.style.backgroundImage = 'url("./content/user-icon.jpg")';
+  } else {
+    photoUrl.style.backgroundImage = `url(${student.photo})`;
+  }
+
+  // Show success notification
+  notice.innerHTML = "<h4>Success!</h4><p>Student found</p>";
+  notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
+  notice.style.border = "1px solid #50c156";
+  notice.style.opacity = "100";
+
+  // Scroll to the top to see the student details
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  setTimeout(() => {
+    notice.style.opacity = "0";
+  }, 2000);
+}
+
 //
 async function fetchStudent() {
   // studentId = searchFormInput.value;
@@ -129,7 +229,7 @@ function noticeToDefault() {
   setTimeout(() => {
     notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
     notice.style.border = "1px solid #50c156";
-    notice.innerHTML = "<h4>Sucess!</h4><p>Student found</p>";
+    notice.innerHTML = "<h4>Success!</h4><p>Student found</p>";
   }, 300);
 }
 // MAIN LOGIC

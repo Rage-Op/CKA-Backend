@@ -1606,6 +1606,61 @@ body {
   margin-bottom: 0;
 }
 
+/* Students Table Styling */
+.students-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+#students-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+#students-table th {
+  padding: 12px;
+  text-align: left;
+  background-color: var(--light);
+  color: var(--dark);
+  font-weight: 600;
+  border-bottom: 2px solid var(--grey);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#students-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--grey);
+  color: var(--dark);
+}
+
+#students-table tbody tr {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#students-table tbody tr:hover {
+  background-color: var(--grey);
+}
+
+#students-table td.credit {
+  color: var(--success);
+  font-weight: 600;
+}
+
+#students-table td.debit {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+#students-table td.due {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 @media screen and (max-width: 768px) {
   .sidebar {
     width: 200px;
@@ -1614,6 +1669,10 @@ body {
   .content {
     width: calc(100% - 60px);
     left: 200px;
+  }
+
+  .students-table-container {
+    max-width: 100%;
   }
 }
 
