@@ -1,5 +1,4 @@
 import express from "express";
-import { connectToDb, getDb } from "./db.js";
 import { ObjectId } from "mongodb";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -11,6 +10,7 @@ import cors from "cors";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 dotenv.config(); // Loads environment variables from a .env file into process.env
+import { connectToDb, getDb } from "./db.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -106,12 +106,17 @@ app.get("/", (req, res) => {
       if (!err) {
         res.redirect("/index.html");
         console.log("already logged in");
-        return;
+      } else {
+        // Token is invalid, send login page
+        res.sendFile(path.join(__dirname, "public", "login.html"));
+        console.log("redirected to login (invalid token)");
       }
     });
+  } else {
+    // No token, send login page
+    res.sendFile(path.join(__dirname, "public", "login.html"));
+    console.log("redirected to login (no token)");
   }
-  res.sendFile(path.join(__dirname, "public", "login.html"));
-  console.log("redirected to login");
 });
 
 // Route to handle login
@@ -153,7 +158,11 @@ app.post("/login", (req, res) => {
 
 // Logout route
 app.post("/logout", (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
   res.json({ success: true, message: "Logged out successfully" });
 });
 
@@ -177,6 +186,13 @@ app.get("/config", (req, res) => {
   res.json({
     apiBaseUrl: apiBaseUrl,
     environment: process.env.NODE_ENV || "development",
+  });
+});
+
+// Environment variables endpoint for frontend
+app.get("/env-config", (req, res) => {
+  res.json({
+    SAFE_MODE: process.env.SAFE_MODE || "true",
   });
 });
 

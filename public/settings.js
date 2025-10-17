@@ -1,225 +1,399 @@
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
-const toggler = document.getElementById("theme-toggle");
-function checkStoredTheme() {
-  let darkTheme = localStorage.getItem("darkTheme");
-  if (darkTheme === "true") {
-    toggler.checked = true;
-    document.body.classList.add("dark");
-  } else {
-    toggler.checked = false;
-    document.body.classList.remove("dark");
-  }
-}
-//
-window.addEventListener("load", () => {
-  if (window.innerWidth < 768) {
-    sideBar.classList.add("close");
-  } else {
-    sideBar.classList.remove("close");
-  }
-});
-//
-let notice = document.querySelector("#sucess-dialog");
-let settingsPG = document.querySelector("#settings-PG");
-let settingsKG = document.querySelector("#settings-KG");
-let settingsNursery = document.querySelector("#settings-nursery");
-let settingsClass1 = document.querySelector("#settings-class1");
-let settingsClass2 = document.querySelector("#settings-class2");
-let settingsClass3 = document.querySelector("#settings-class3");
-let settingsClass4 = document.querySelector("#settings-class4");
-let settingsClass5 = document.querySelector("#settings-class5");
-let settingsClass6 = document.querySelector("#settings-class6");
-let settingsTransport = document.querySelector("#settings-transport");
-let settingsDiet = document.querySelector("#settings-diet");
-let settingsExam = document.querySelector("#settings-exam");
-let saveButton = document.querySelector("#admit-button");
-let cancelButton = document.querySelector("#cancel-button");
-const localURI = window.location.origin;
-const hostedURI = "https://cka-backend.onrender.com";
+/**
+ * Settings Management Module
+ * Handles viewing and updating system settings for fees
+ */
 
-cancelButton.addEventListener("click", async (event) => {
-  event.preventDefault();
-  let URL = `${localURI}/settings`;
+// Immediately Invoked Function Expression (IIFE) for module pattern
+(function () {
+  "use strict";
 
-  try {
-    let response = await fetch(`${URL}`);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
+  // Configuration
+  const CONFIG = {
+    API_BASE_URL: window.location.origin,
+    NOTIFICATION_TIMEOUT: 2000,
+  };
+
+  // DOM Elements Cache
+  const DOM = {
+    // Theme elements
+    themeToggle: document.getElementById("theme-toggle"),
+    sideBar: document.querySelector(".sidebar"),
+
+    // Settings form elements
+    monthlyPG: document.querySelector("#settings-PG"),
+    monthlyKG: document.querySelector("#settings-KG"),
+    monthlyNursery: document.querySelector("#settings-nursery"),
+    monthly1: document.querySelector("#settings-class1"),
+    monthly2: document.querySelector("#settings-class2"),
+    monthly3: document.querySelector("#settings-class3"),
+    monthly4: document.querySelector("#settings-class4"),
+    monthly5: document.querySelector("#settings-class5"),
+    monthly6: document.querySelector("#settings-class6"),
+    transport: document.querySelector("#settings-transport"),
+    diet: document.querySelector("#settings-diet"),
+    exam: document.querySelector("#settings-exam"),
+
+    // Action buttons
+    saveButton: document.querySelector("#admit-button"),
+    cancelButton: document.querySelector("#cancel-button"),
+
+    // Notification
+    notice: document.querySelector("#sucess-dialog"),
+  };
+
+  // State management
+  let STATE = {
+    settings: null,
+    isLoading: false,
+  };
+
+  /**
+   * Initialize the application
+   */
+  function init() {
+    attachEventListeners();
+    checkStoredTheme();
+    handleResponsiveSidebar();
+    fetchSettings();
+  }
+
+  /**
+   * Attach event listeners to DOM elements
+   */
+  function attachEventListeners() {
+    // Theme toggle
+    DOM.themeToggle.addEventListener("change", handleThemeToggle);
+
+    // Form buttons
+    DOM.cancelButton.addEventListener("click", handleCancel);
+
+    // Sidebar toggle
+    const menuBar = document.querySelector(".content nav .bx.bx-menu");
+    if (menuBar) {
+      menuBar.addEventListener("click", toggleSidebar);
     }
 
-    let data = await response.json();
-    settingsPG.value = data[0].monthlyPG;
-    settingsKG.value = data[0].monthlyKG;
-    settingsNursery.value = data[0].monthlyNursery;
-    settingsClass1.value = data[0].monthly1;
-    settingsClass2.value = data[0].monthly2;
-    settingsClass3.value = data[0].monthly3;
-    settingsClass4.value = data[0].monthly4;
-    settingsClass5.value = data[0].monthly5;
-    settingsClass6.value = data[0].monthly6;
-    settingsTransport.value = data[0].transport;
-    settingsDiet.value = data[0].diet;
-    settingsExam.value = data[0].exam;
-  } catch (error) {
-    console.log(error);
-    settingsPG.value = "!";
-    settingsKG.value = "!";
-    settingsNursery.value = "!";
-    settingsClass1.value = "!";
-    settingsClass2.value = "!";
-    settingsClass3.value = "!";
-    settingsClass4.value = "!";
-    settingsClass5.value = "!";
-    settingsClass6.value = "!";
-    settingsTransport.value = "!";
-    settingsDiet.value = "!";
-    settingsExam.value = "!";
+    // Sidebar links
+    const sideLinks = document.querySelectorAll(
+      ".sidebar .side-menu li a:not(.logout)"
+    );
+    sideLinks.forEach(attachSidebarLinkHandler);
+
+    // Window resize
+    window.addEventListener("resize", handleResponsiveSidebar);
+    window.addEventListener("load", handleResponsiveSidebar);
   }
-});
-// On page load function called
-fetchSettings();
 
-async function fetchSettings() {
-  let URL = `${localURI}/settings`;
+  /**
+   * Check and apply stored theme preference
+   */
+  function checkStoredTheme() {
+    const darkTheme = localStorage.getItem("darkTheme") === "true";
+    DOM.themeToggle.checked = darkTheme;
+    document.body.classList.toggle("dark", darkTheme);
+  }
 
-  try {
-    let response = await fetch(`${URL}`);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
+  /**
+   * Handle theme toggle changes
+   */
+  function handleThemeToggle() {
+    const isDarkTheme = this.checked;
+    document.body.classList.toggle("dark", isDarkTheme);
+    localStorage.setItem("darkTheme", isDarkTheme);
+  }
+
+  /**
+   * Handle responsive sidebar behavior
+   */
+  function handleResponsiveSidebar() {
+    if (window.innerWidth < 768) {
+      DOM.sideBar.classList.add("close");
+    } else {
+      DOM.sideBar.classList.remove("close");
     }
-
-    let data = await response.json();
-    settingsPG.value = data[0].monthlyPG;
-    settingsKG.value = data[0].monthlyKG;
-    settingsNursery.value = data[0].monthlyNursery;
-    settingsClass1.value = data[0].monthly1;
-    settingsClass2.value = data[0].monthly2;
-    settingsClass3.value = data[0].monthly3;
-    settingsClass4.value = data[0].monthly4;
-    settingsClass5.value = data[0].monthly5;
-    settingsClass6.value = data[0].monthly6;
-    settingsTransport.value = data[0].transport;
-    settingsDiet.value = data[0].diet;
-    settingsExam.value = data[0].exam;
-    saveButton.addEventListener("click", saveEventHandler);
-  } catch (error) {
-    console.log(error);
-    settingsPG.value = "!";
-    settingsKG.value = "!";
-    settingsNursery.value = "!";
-    settingsClass1.value = "!";
-    settingsClass2.value = "!";
-    settingsClass3.value = "!";
-    settingsClass4.value = "!";
-    settingsClass5.value = "!";
-    settingsClass6.value = "!";
-    settingsTransport.value = "!";
-    settingsDiet.value = "!";
-    settingsExam.value = "!";
   }
-}
 
-async function saveEventHandler(event) {
-  event.preventDefault();
-  saveButton.removeEventListener("click", saveEventHandler);
-  let data = {
-    monthlyPG: Number(settingsPG.value),
-    monthlyKG: Number(settingsKG.value),
-    monthlyNursery: Number(settingsNursery.value),
-    monthly1: Number(settingsClass1.value),
-    monthly2: Number(settingsClass2.value),
-    monthly3: Number(settingsClass3.value),
-    monthly4: Number(settingsClass4.value),
-    monthly5: Number(settingsClass5.value),
-    monthly6: Number(settingsClass6.value),
-    transport: Number(settingsTransport.value),
-    exam: Number(settingsExam.value),
-    diet: Number(settingsDiet.value),
-  };
-  const patchURL = `${localURI}/settings`;
-  const options = {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  };
-  await fetch(patchURL, options)
-    .then((response) => {
+  /**
+   * Toggle sidebar open/close
+   */
+  function toggleSidebar() {
+    DOM.sideBar.classList.toggle("close");
+  }
+
+  /**
+   * Attach click handler to sidebar links
+   * @param {HTMLElement} item - Sidebar link element
+   */
+  function attachSidebarLinkHandler(item) {
+    const li = item.parentElement;
+    item.addEventListener("click", () => {
+      document
+        .querySelectorAll(".sidebar .side-menu li a:not(.logout)")
+        .forEach((i) => i.parentElement.classList.remove("active"));
+      li.classList.add("active");
+    });
+  }
+
+  /**
+   * Handle cancel button click
+   * @param {Event} event - Click event
+   */
+  async function handleCancel(event) {
+    event.preventDefault();
+
+    // Reload settings from server
+    await fetchSettings();
+  }
+
+  /**
+   * Fetch settings from API
+   */
+  async function fetchSettings() {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/settings`);
+
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        throw new Error(
+          `Failed to fetch settings (Status: ${response.status})`
+        );
       }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Response data:", data);
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-      }, 2000);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the delete operation:", error);
-      notice.innerHTML = "<h4>Failed!</h4><p>Update failed</p>";
-      notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
-      notice.style.border = "1px solid #D32F2F";
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-        noticeToDefault();
-      }, 2000);
-    });
-}
 
-function noticeToDefault() {
-  setTimeout(() => {
-    notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
-    notice.style.border = "1px solid #50c156";
-    notice.innerHTML = "<h4>Sucess!</h4><p>Student updated</p>";
-  }, 300);
-}
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
+      const data = await response.json();
+      STATE.settings = data[0];
 
-const sideLinks = document.querySelectorAll(
-  ".sidebar .side-menu li a:not(.logout)"
-);
+      // Display settings
+      displaySettings(STATE.settings);
 
-sideLinks.forEach((item) => {
-  const li = item.parentElement;
-  item.addEventListener("click", () => {
-    sideLinks.forEach((i) => {
-      i.parentElement.classList.remove("active");
-    });
-    li.classList.add("active");
-  });
-});
-// Sidebar
-const menuBar = document.querySelector(".content nav .bx.bx-menu");
-const sideBar = document.querySelector(".sidebar");
-
-menuBar.addEventListener("click", () => {
-  sideBar.classList.toggle("close");
-});
-
-window.addEventListener("resize", () => {
-  if (window.innerWidth < 768) {
-    sideBar.classList.add("close");
-  } else {
-    sideBar.classList.remove("close");
+      // Add save event handler
+      DOM.saveButton.addEventListener("click", handleSave);
+    } catch (error) {
+      handleError("Error fetching settings", error);
+      showErrorInForm();
+    } finally {
+      setLoading(false);
+    }
   }
-});
-// Theme
-toggler.addEventListener("change", function () {
-  if (this.checked) {
-    document.body.classList.add("dark");
-    localStorage.setItem("darkTheme", true);
-  } else {
-    document.body.classList.remove("dark");
-    localStorage.setItem("darkTheme", false);
+
+  /**
+   * Display settings in the form
+   * @param {Object} settings - Settings object
+   */
+  function displaySettings(settings) {
+    DOM.monthlyPG.value = settings.monthlyPG;
+    DOM.monthlyKG.value = settings.monthlyKG;
+    DOM.monthlyNursery.value = settings.monthlyNursery;
+    DOM.monthly1.value = settings.monthly1;
+    DOM.monthly2.value = settings.monthly2;
+    DOM.monthly3.value = settings.monthly3;
+    DOM.monthly4.value = settings.monthly4;
+    DOM.monthly5.value = settings.monthly5;
+    DOM.monthly6.value = settings.monthly6;
+    DOM.transport.value = settings.transport;
+    DOM.diet.value = settings.diet;
+    DOM.exam.value = settings.exam;
   }
-});
-checkStoredTheme();
+
+  /**
+   * Show error in form when settings can't be loaded
+   */
+  function showErrorInForm() {
+    DOM.monthlyPG.value = "!";
+    DOM.monthlyKG.value = "!";
+    DOM.monthlyNursery.value = "!";
+    DOM.monthly1.value = "!";
+    DOM.monthly2.value = "!";
+    DOM.monthly3.value = "!";
+    DOM.monthly4.value = "!";
+    DOM.monthly5.value = "!";
+    DOM.monthly6.value = "!";
+    DOM.transport.value = "!";
+    DOM.diet.value = "!";
+    DOM.exam.value = "!";
+  }
+
+  /**
+   * Handle save button click
+   * @param {Event} event - Click event
+   */
+  async function handleSave(event) {
+    event.preventDefault();
+
+    if (!validateForm()) {
+      showNotification(
+        "Failed!",
+        "All settings must be valid numbers",
+        "error"
+      );
+      return;
+    }
+
+    // Remove event listener to prevent multiple submissions
+    DOM.saveButton.removeEventListener("click", handleSave);
+
+    // Update settings
+    await updateSettings();
+  }
+
+  /**
+   * Validate form fields
+   * @returns {boolean} - Whether form is valid
+   */
+  function validateForm() {
+    const settingsFields = [
+      DOM.monthlyPG,
+      DOM.monthlyKG,
+      DOM.monthlyNursery,
+      DOM.monthly1,
+      DOM.monthly2,
+      DOM.monthly3,
+      DOM.monthly4,
+      DOM.monthly5,
+      DOM.monthly6,
+      DOM.transport,
+      DOM.diet,
+      DOM.exam,
+    ];
+
+    return settingsFields.every((field) => {
+      const value = field.value.trim();
+      return value !== "" && !isNaN(Number(value));
+    });
+  }
+
+  /**
+   * Update settings in the database
+   */
+  async function updateSettings() {
+    setLoading(true);
+
+    try {
+      // Prepare updated settings data
+      const updatedSettings = {
+        monthlyPG: Number(DOM.monthlyPG.value),
+        monthlyKG: Number(DOM.monthlyKG.value),
+        monthlyNursery: Number(DOM.monthlyNursery.value),
+        monthly1: Number(DOM.monthly1.value),
+        monthly2: Number(DOM.monthly2.value),
+        monthly3: Number(DOM.monthly3.value),
+        monthly4: Number(DOM.monthly4.value),
+        monthly5: Number(DOM.monthly5.value),
+        monthly6: Number(DOM.monthly6.value),
+        transport: Number(DOM.transport.value),
+        exam: Number(DOM.exam.value),
+        diet: Number(DOM.diet.value),
+      };
+
+      // Send update request
+      const response = await fetch(`${CONFIG.API_BASE_URL}/settings`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedSettings),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Update failed (Status: ${response.status})`);
+      }
+
+      await response.json();
+
+      // Show success notification
+      showNotification("Success!", "Settings updated successfully", "success");
+
+      // Reload settings
+      await fetchSettings();
+    } catch (error) {
+      handleError("Error updating settings", error);
+      showNotification("Failed!", "Update failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Show notification to user
+   * @param {string} title - Notification title
+   * @param {string} message - Notification message
+   * @param {string} type - Notification type ('success' or 'error')
+   */
+  function showNotification(title, message, type = "success") {
+    DOM.notice.innerHTML = `<h4>${title}</h4><p>${message}</p>`;
+
+    if (type === "error") {
+      DOM.notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
+      DOM.notice.style.border = "1px solid #D32F2F";
+    } else {
+      DOM.notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
+      DOM.notice.style.border = "1px solid #50c156";
+    }
+
+    DOM.notice.style.opacity = "100";
+
+    setTimeout(() => {
+      DOM.notice.style.opacity = "0";
+
+      // Reset to default success style after hiding
+      if (type === "error") {
+        setTimeout(() => {
+          DOM.notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
+          DOM.notice.style.border = "1px solid #50c156";
+          DOM.notice.innerHTML = "<h4>Success!</h4><p>Student updated</p>";
+        }, 300);
+      }
+    }, CONFIG.NOTIFICATION_TIMEOUT);
+  }
+
+  /**
+   * Set loading state
+   * @param {boolean} isLoading - Whether app is in loading state
+   */
+  function setLoading(isLoading) {
+    STATE.isLoading = isLoading;
+
+    // Disable/enable form elements based on loading state
+    const formElements = [
+      DOM.monthlyPG,
+      DOM.monthlyKG,
+      DOM.monthlyNursery,
+      DOM.monthly1,
+      DOM.monthly2,
+      DOM.monthly3,
+      DOM.monthly4,
+      DOM.monthly5,
+      DOM.monthly6,
+      DOM.transport,
+      DOM.diet,
+      DOM.exam,
+      DOM.saveButton,
+      DOM.cancelButton,
+    ];
+
+    formElements.forEach((element) => {
+      if (element) element.disabled = isLoading;
+    });
+
+    // Add loading indicator if needed
+    // This could be a spinner or other visual indicator
+  }
+
+  /**
+   * Handle errors
+   * @param {string} context - Error context
+   * @param {Error} error - Error object
+   */
+  function handleError(context, error) {
+    // In production, you might want to log to a service instead of console
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`${context}: ${error.message}`);
+    }
+
+    // Additional error handling could go here
+    // e.g., sending errors to a monitoring service
+  }
+
+  // Initialize the application
+  init();
+})();

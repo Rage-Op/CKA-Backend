@@ -4,6 +4,35 @@
 let apiBaseUrl = null;
 let configLoaded = false;
 
+// Global CONFIG object
+window.CONFIG = {
+  // Safe mode configuration (requires password prompts)
+  SAFE_MODE: true, // Default to true for security
+
+  // Function to check if safe mode is enabled
+  isSafeMode: function () {
+    return this.SAFE_MODE !== false;
+  },
+};
+
+// Check for environment variables
+(function loadEnvVariables() {
+  fetch("/env-config")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data && typeof data.SAFE_MODE !== "undefined") {
+        window.CONFIG.SAFE_MODE = data.SAFE_MODE === "true";
+        console.log(
+          "Safe mode:",
+          window.CONFIG.SAFE_MODE ? "enabled" : "disabled"
+        );
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading environment variables:", error);
+    });
+})();
+
 // Function to get the API base URL
 async function getApiBaseUrl() {
   if (configLoaded && apiBaseUrl) {

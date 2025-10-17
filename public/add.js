@@ -1,338 +1,525 @@
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
-const toggler = document.getElementById("theme-toggle");
-function checkStoredTheme() {
-  let darkTheme = localStorage.getItem("darkTheme");
-  if (darkTheme === "true") {
-    toggler.checked = true;
-    document.body.classList.add("dark");
-  } else {
-    toggler.checked = false;
-    document.body.classList.remove("dark");
-  }
-}
-//
-window.addEventListener("load", () => {
-  if (window.innerWidth < 768) {
-    sideBar.classList.add("close");
-  } else {
-    sideBar.classList.remove("close");
-  }
-});
-//
-let notice = document.querySelector("#sucess-dialog");
-const admitButton = document.querySelector("#admit-button");
-const cancelButton = document.querySelector("#cancel-button");
-let addName = document.querySelector("#add-name");
-let addDOB = document.querySelector("#add-DOB");
-let addFname = document.querySelector("#add-fname");
-let addMname = document.querySelector("#add-mname");
-let addContact = document.querySelector("#add-contact");
-let addAddress = document.querySelector("#add-address");
-let addStudentId = document.querySelector("#add-studentId");
-let addAdmitDate = document.querySelector("#add-admitdate");
-let addDue = document.querySelector("#result-due");
-let addTransport = document.querySelector("#add-transport");
-let addDiet = document.querySelector("#add-diet");
-let addClass = document.querySelector("#add-class");
-let addGender = document.querySelector("#add-gender");
-let photoUrl = document.querySelector(".photo");
-const localURI = window.location.origin;
-const hostedURI = "https://cka-backend.onrender.com";
-let nextStudentId;
-let settings;
-//
-//
-// To get next student ID.
-getStudentId();
-async function getStudentId() {
-  let getURL = `${localURI}/students`;
-  try {
-    let response = await fetch(getURL);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    let data = await response.json();
-    if (data.length === 0) {
-      nextStudentId = 1;
-    } else {
-      nextStudentId = Number(data[0].studentId) + 1;
-    }
-    addStudentId.textContent = nextStudentId;
-    let dateURL = `${localURI}/bs-date`;
-    let responseDate = await fetch(dateURL);
-    let datetimeStr = await responseDate.json();
-    const datePart = datetimeStr.split(" ")[0];
-    const parts = datePart.split("-");
-    const formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-    addAdmitDate.textContent = formattedDate;
-  } catch (error) {
-    console.log(error);
-  }
-}
-//
-//
-//
-admitButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  if (
-    addName.value === "" ||
-    addDOB.value === "" ||
-    addFname.value === "" ||
-    addMname.value === "" ||
-    addContact.value === "" ||
-    addAddress.value === ""
-  ) {
-    console.log("error");
-    notice.innerHTML = "<h4>Failed!</h4><p>Student admission failed</p>";
-    notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
-    notice.style.border = "1px solid #D32F2F";
-    notice.style.opacity = "100";
-    setTimeout(() => {
-      notice.style.opacity = "0";
-      noticeToDefault();
-    }, 2000);
-  } else {
-    fetchStudent();
-  }
-});
-//
-//
-//
-cancelButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  addName.value = "";
-  addDOB.value = "";
-  addFname.value = "";
-  addMname.value = "";
-  addContact.value = "";
-  addAddress.value = "";
-  addTransport.checked = false;
-  addDiet.checked = false;
-  addClass.value = "P.G.";
-  addGender.value = "male";
-  addStudentId.textContent = "...";
-  addAdmitDate.textContent = "...";
-});
-//
-//
-//
-async function fetchStudent() {
-  let getURL = `${localURI}/students`;
-  let getSettingsURL = `${localURI}/settings`;
-  try {
-    let response = await fetch(getSettingsURL);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    settings = await response.json();
-  } catch (error) {
-    console.log(error);
-  }
-  try {
-    let response = await fetch(getURL);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    let data = await response.json();
-    if (data.length === 0) {
-      nextStudentId = 1;
-    } else {
-      nextStudentId = Number(data[0].studentId) + 1;
-    }
-    addStudentId.textContent = nextStudentId;
-    addStudent(nextStudentId, addAdmitDate.textContent);
-  } catch (error) {
-    console.log(error);
-    notice.innerHTML = "<h4>Failed!</h4><p>Student admission failed</p>";
-    notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
-    notice.style.border = "1px solid #D32F2F";
-    notice.style.opacity = "100";
-    setTimeout(() => {
-      notice.style.opacity = "0";
-      noticeToDefault();
-    }, 2000);
-  }
-}
+/**
+ * Student Addition Module
+ * Handles adding new students with proper fee structure management
+ */
 
-async function addStudent(nextStudentId, admitDate) {
-  let postURL = `${localURI}/students/add`;
-  let toSetMonthlyFees;
-  let toSetTransportFees;
-  let toSetDietFees;
-  let toSetExamFees = settings[0].exam;
-  //
-  switch (addClass.value) {
-    case "P.G.":
-      toSetMonthlyFees = settings[0].monthlyPG;
-      break;
-    case "K.G.":
-      toSetMonthlyFees = settings[0].monthlyKG;
-      break;
-    case "nursery":
-      toSetMonthlyFees = settings[0].monthlyNursery;
-      break;
-    case "1":
-      toSetMonthlyFees = settings[0].monthly1;
-      break;
-    case "2":
-      toSetMonthlyFees = settings[0].monthly2;
-      break;
-    case "3":
-      toSetMonthlyFees = settings[0].monthly3;
-      break;
-    case "4":
-      toSetMonthlyFees = settings[0].monthly4;
-      break;
-    case "5":
-      toSetMonthlyFees = settings[0].monthly5;
-      break;
-    case "6":
-      toSetMonthlyFees = settings[0].monthly6;
-      break;
-    default:
-      console.log("Invalid response from select!");
+// Immediately Invoked Function Expression (IIFE) for module pattern
+(function () {
+  "use strict";
+
+  // Configuration
+  const CONFIG = {
+    DEFAULT_CLASS: "P.G.",
+    DEFAULT_GENDER: "male",
+    DEFAULT_PHOTO_URL: "./content/user-icon.jpg",
+    NOT_FOUND_PHOTO_URL: "./content/user-not-found-icon.jpg",
+  };
+
+  // DOM Elements Cache
+  const DOM = {
+    // Theme elements
+    themeToggle: document.getElementById("theme-toggle"),
+    sideBar: document.querySelector(".sidebar"),
+
+    // Form elements
+    name: document.querySelector("#add-name"),
+    dob: document.querySelector("#add-DOB"),
+    fatherName: document.querySelector("#add-fname"),
+    motherName: document.querySelector("#add-mname"),
+    contact: document.querySelector("#add-contact"),
+    address: document.querySelector("#add-address"),
+    studentId: document.querySelector("#add-studentId"),
+    admitDate: document.querySelector("#add-admitdate"),
+    due: document.querySelector("#result-due"),
+    transport: document.querySelector("#add-transport"),
+    diet: document.querySelector("#add-diet"),
+    class: document.querySelector("#add-class"),
+    gender: document.querySelector("#add-gender"),
+    photo: document.querySelector(".photo"),
+
+    // Action buttons
+    admitButton: document.querySelector("#admit-button"),
+    cancelButton: document.querySelector("#cancel-button"),
+
+    // Notification
+    notice: document.querySelector("#sucess-dialog"),
+  };
+
+  // State keys
+  const STATE_KEYS = {
+    NEXT_STUDENT_ID: "add_nextStudentId",
+    SETTINGS: "add_settings",
+    CURRENT_DATE: "add_currentDate",
+  };
+
+  /**
+   * Initialize the application
+   */
+  function init() {
+    // Initialize state
+    initializeState();
+
+    // Attach event listeners
+    attachEventListeners();
+
+    // Apply theme
+    checkStoredTheme();
+
+    // Handle responsive sidebar
+    handleResponsiveSidebar();
+
+    // Get student ID and date
+    getStudentId();
+
+    // Restore state if available
+    restoreState();
   }
-  //
-  toSetTransportFees = settings[0].transport;
-  //
-  toSetDietFees = settings[0].diet;
-  //
-  let jsonData = {
-    name: `${addName.value}`,
-    gender: `${addGender.value}`,
-    class: `${addClass.value}`,
-    studentId: nextStudentId,
-    DOB: `${addDOB.value}`,
-    admitDate: `${admitDate}`,
-    fatherName: `${addFname.value}`,
-    motherName: `${addMname.value}`,
-    contact: `${addContact.value}`,
-    address: `${addAddress.value}`,
-    transport: addTransport.checked,
-    diet: addDiet.checked,
-    monthlyFees: toSetMonthlyFees,
-    transportFees: toSetTransportFees,
-    dietFees: toSetDietFees,
-    examFees: toSetExamFees,
-    debitAmount: [
-      {
-        date: "previous year",
-        amount: 0,
-        remark: "OLD DUE!",
-      },
-    ],
-    creditAmount: [
-      {
-        date: "starting year",
-        amount: 0,
-        bill: "DISCOUNT!",
-      },
-    ],
-    fees: {
-      debit: 0,
-      credit: 0,
-    },
-    photo: `https://raw.githubusercontent.com/Rage-Op/imageResource/main/${nextStudentId}.jpg`,
-  };
-  //
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(jsonData),
-  };
-  await fetch(postURL, options)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+
+  /**
+   * Initialize state with default values
+   */
+  function initializeState() {
+    if (!StateManager.getState(STATE_KEYS.NEXT_STUDENT_ID)) {
+      StateManager.setState(STATE_KEYS.NEXT_STUDENT_ID, null);
+    }
+
+    if (!StateManager.getState(STATE_KEYS.SETTINGS)) {
+      StateManager.setState(STATE_KEYS.SETTINGS, null);
+    }
+
+    if (!StateManager.getState(STATE_KEYS.CURRENT_DATE)) {
+      StateManager.setState(STATE_KEYS.CURRENT_DATE, null);
+    }
+  }
+
+  /**
+   * Restore state from StateManager
+   */
+  function restoreState() {
+    const nextStudentId = StateManager.getState(STATE_KEYS.NEXT_STUDENT_ID);
+    const currentDate = StateManager.getState(STATE_KEYS.CURRENT_DATE);
+
+    if (nextStudentId) {
+      DOM.studentId.textContent = nextStudentId;
+    }
+
+    if (currentDate) {
+      DOM.admitDate.textContent = currentDate;
+    }
+  }
+
+  /**
+   * Attach event listeners to DOM elements
+   */
+  function attachEventListeners() {
+    // Theme toggle
+    DOM.themeToggle.addEventListener("change", handleThemeToggle);
+
+    // Form buttons
+    DOM.admitButton.addEventListener("click", handleAdmit);
+    DOM.cancelButton.addEventListener("click", handleCancel);
+
+    // Sidebar toggle
+    const menuBar = document.querySelector(".content nav .bx.bx-menu");
+    if (menuBar) {
+      menuBar.addEventListener("click", toggleSidebar);
+    }
+
+    // Sidebar links
+    const sideLinks = document.querySelectorAll(
+      ".sidebar .side-menu li a:not(.logout)"
+    );
+    sideLinks.forEach(attachSidebarLinkHandler);
+
+    // Window resize
+    window.addEventListener("resize", handleResponsiveSidebar);
+    window.addEventListener("load", handleResponsiveSidebar);
+
+    // Subscribe to state changes
+    StateManager.subscribe(
+      STATE_KEYS.NEXT_STUDENT_ID,
+      handleStudentIdStateChange
+    );
+    StateManager.subscribe(STATE_KEYS.CURRENT_DATE, handleDateStateChange);
+  }
+
+  /**
+   * Handle student ID state changes
+   * @param {number} studentId - Next student ID
+   */
+  function handleStudentIdStateChange(studentId) {
+    if (studentId) {
+      DOM.studentId.textContent = studentId;
+    }
+  }
+
+  /**
+   * Handle date state changes
+   * @param {string} date - Current date
+   */
+  function handleDateStateChange(date) {
+    if (date) {
+      DOM.admitDate.textContent = date;
+    }
+  }
+
+  /**
+   * Check and apply stored theme preference
+   */
+  function checkStoredTheme() {
+    const darkTheme = localStorage.getItem("darkTheme") === "true";
+    DOM.themeToggle.checked = darkTheme;
+    document.body.classList.toggle("dark", darkTheme);
+  }
+
+  /**
+   * Handle theme toggle changes
+   */
+  function handleThemeToggle() {
+    const isDarkTheme = this.checked;
+    document.body.classList.toggle("dark", isDarkTheme);
+    localStorage.setItem("darkTheme", isDarkTheme);
+  }
+
+  /**
+   * Handle responsive sidebar behavior
+   */
+  function handleResponsiveSidebar() {
+    if (window.innerWidth < 768) {
+      DOM.sideBar.classList.add("close");
+    } else {
+      DOM.sideBar.classList.remove("close");
+    }
+  }
+
+  /**
+   * Toggle sidebar open/close
+   */
+  function toggleSidebar() {
+    DOM.sideBar.classList.toggle("close");
+  }
+
+  /**
+   * Attach click handler to sidebar links
+   * @param {HTMLElement} item - Sidebar link element
+   */
+  function attachSidebarLinkHandler(item) {
+    const li = item.parentElement;
+    item.addEventListener("click", () => {
+      document
+        .querySelectorAll(".sidebar .side-menu li a:not(.logout)")
+        .forEach((i) => i.parentElement.classList.remove("active"));
+      li.classList.add("active");
+    });
+  }
+
+  /**
+   * Get next available student ID
+   */
+  async function getStudentId() {
+    setLoading(true);
+
+    try {
+      // Get next student ID using API service
+      const students = await ApiService.getStudents();
+
+      // Set next student ID
+      let nextStudentId;
+      if (students.length === 0) {
+        nextStudentId = 1;
+      } else {
+        nextStudentId = Number(students[0].studentId) + 1;
       }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Response data:", data);
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-      }, 2000);
+
+      // Update state
+      StateManager.setState(STATE_KEYS.NEXT_STUDENT_ID, nextStudentId);
+
+      // Get current date
+      await fetchCurrentDate();
+    } catch (error) {
+      handleError("Error fetching student ID", error);
+      UiManager.showNotification(
+        "Failed!",
+        "Could not fetch student ID",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Fetch current date in BS format
+   */
+  async function fetchCurrentDate() {
+    try {
+      // Get current date using API service
+      const dateStr = await ApiService.getCurrentDate();
+
+      // Update state
+      StateManager.setState(STATE_KEYS.CURRENT_DATE, dateStr);
+    } catch (error) {
+      handleError("Error fetching current date", error);
+      UiManager.showNotification(
+        "Failed!",
+        "Could not fetch current date",
+        "error"
+      );
+    }
+  }
+
+  /**
+   * Handle admit button click
+   * @param {Event} event - Click event
+   */
+  function handleAdmit(event) {
+    event.preventDefault();
+
+    if (!validateForm()) {
+      UiManager.showNotification(
+        "Failed!",
+        "Please fill all required fields",
+        "error"
+      );
+      return;
+    }
+
+    fetchSettings();
+  }
+
+  /**
+   * Handle cancel button click
+   * @param {Event} event - Click event
+   */
+  function handleCancel(event) {
+    event.preventDefault();
+    resetForm();
+  }
+
+  /**
+   * Fetch settings data for fee structure
+   */
+  async function fetchSettings() {
+    setLoading(true);
+
+    try {
+      // Ensure we have the latest student ID
+      const students = await ApiService.getStudents();
+
+      // Update next student ID
+      let nextStudentId;
+      if (students.length === 0) {
+        nextStudentId = 1;
+      } else {
+        nextStudentId = Number(students[0].studentId) + 1;
+      }
+
+      // Update state
+      StateManager.setState(STATE_KEYS.NEXT_STUDENT_ID, nextStudentId);
+
+      // Fetch settings using API service
+      const settings = await ApiService.getSettings();
+
+      // Update state
+      StateManager.setState(STATE_KEYS.SETTINGS, settings[0]);
+
+      // Add student with fetched settings
+      addStudent(nextStudentId, StateManager.getState(STATE_KEYS.CURRENT_DATE));
+    } catch (error) {
+      handleError("Error fetching settings", error);
+      UiManager.showNotification(
+        "Failed!",
+        "Student admission failed",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Add a new student to the database
+   * @param {number} studentId - Student ID
+   * @param {string} admitDate - Admission date
+   */
+  async function addStudent(studentId, admitDate) {
+    setLoading(true);
+
+    try {
+      const settings = StateManager.getState(STATE_KEYS.SETTINGS);
+
+      if (!settings) {
+        throw new Error("Settings not available");
+      }
+
+      // Determine monthly fees based on class
+      let monthlyFees = determineMonthlyFees(DOM.class.value, settings);
+
+      // Prepare student data
+      const studentData = {
+        name: DOM.name.value,
+        gender: DOM.gender.value,
+        class: DOM.class.value,
+        studentId: studentId,
+        DOB: DOM.dob.value,
+        admitDate: admitDate,
+        fatherName: DOM.fatherName.value,
+        motherName: DOM.motherName.value,
+        contact: DOM.contact.value,
+        address: DOM.address.value,
+        transport: DOM.transport.checked,
+        diet: DOM.diet.checked,
+        monthlyFees: monthlyFees,
+        transportFees: settings.transport,
+        dietFees: settings.diet,
+        examFees: settings.exam,
+        debitAmount: [
+          {
+            date: "previous year",
+            amount: 0,
+            remark: "OLD DUE!",
+          },
+        ],
+        creditAmount: [
+          {
+            date: "starting year",
+            amount: 0,
+            bill: "DISCOUNT!",
+          },
+        ],
+        fees: {
+          debit: 0,
+          credit: 0,
+        },
+        photo: `https://raw.githubusercontent.com/Rage-Op/imageResource/main/${studentId}.jpg`,
+      };
+
+      // Send request to add student using API service
+      await ApiService.addStudent(studentData);
+
+      // Show success notification
+      UiManager.showNotification(
+        "Success!",
+        "Student added successfully",
+        "success"
+      );
+
+      // Reset form and get new student ID
+      resetForm();
       getStudentId();
-      setTimeout(() => {
-        window.location.reload();
-      }, 6000);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the add operation:", error);
-      notice.innerHTML = "<h4>Failed!</h4><p>Student admission failed</p>";
-      notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
-      notice.style.border = "1px solid #D32F2F";
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-        noticeToDefault();
-      }, 2000);
-    });
-  addName.value = "";
-  addDOB.value = "";
-  addFname.value = "";
-  addMname.value = "";
-  addContact.value = "";
-  addAddress.value = "";
-  addTransport.checked = false;
-  addDiet.checked = false;
-  addClass.value = "P.G.";
-  addGender.value = "male";
-  addStudentId.textContent = "...";
-  addAdmitDate.textContent = "...";
-}
-function noticeToDefault() {
-  setTimeout(() => {
-    notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
-    notice.style.border = "1px solid #50c156";
-    notice.innerHTML = "<h4>Sucess!</h4><p>Student added</p>";
-  }, 300);
-}
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
 
-const sideLinks = document.querySelectorAll(
-  ".sidebar .side-menu li a:not(.logout)"
-);
-
-sideLinks.forEach((item) => {
-  const li = item.parentElement;
-  item.addEventListener("click", () => {
-    sideLinks.forEach((i) => {
-      i.parentElement.classList.remove("active");
-    });
-    li.classList.add("active");
-  });
-});
-// Sidebar
-const menuBar = document.querySelector(".content nav .bx.bx-menu");
-const sideBar = document.querySelector(".sidebar");
-
-menuBar.addEventListener("click", () => {
-  sideBar.classList.toggle("close");
-});
-
-window.addEventListener("resize", () => {
-  if (window.innerWidth < 768) {
-    sideBar.classList.add("close");
-  } else {
-    sideBar.classList.remove("close");
+      // No page reload needed
+    } catch (error) {
+      handleError("Error adding student", error);
+      UiManager.showNotification(
+        "Failed!",
+        "Student admission failed",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
-});
-// Theme
-toggler.addEventListener("change", function () {
-  if (this.checked) {
-    document.body.classList.add("dark");
-    localStorage.setItem("darkTheme", true);
-  } else {
-    document.body.classList.remove("dark");
-    localStorage.setItem("darkTheme", false);
+
+  /**
+   * Determine monthly fees based on class
+   * @param {string} classValue - Selected class
+   * @param {Object} settings - Settings object
+   * @returns {number} - Monthly fees amount
+   */
+  function determineMonthlyFees(classValue, settings) {
+    switch (classValue) {
+      case "P.G.":
+        return settings.monthlyPG;
+      case "K.G.":
+        return settings.monthlyKG;
+      case "nursery":
+        return settings.monthlyNursery;
+      case "1":
+        return settings.monthly1;
+      case "2":
+        return settings.monthly2;
+      case "3":
+        return settings.monthly3;
+      case "4":
+        return settings.monthly4;
+      case "5":
+        return settings.monthly5;
+      case "6":
+        return settings.monthly6;
+      default:
+        return settings.monthlyPG;
+    }
   }
-});
-checkStoredTheme();
+
+  /**
+   * Reset form to default values
+   */
+  function resetForm() {
+    DOM.name.value = "";
+    DOM.dob.value = "";
+    DOM.fatherName.value = "";
+    DOM.motherName.value = "";
+    DOM.contact.value = "";
+    DOM.address.value = "";
+    DOM.transport.checked = false;
+    DOM.diet.checked = false;
+    DOM.class.value = CONFIG.DEFAULT_CLASS;
+    DOM.gender.value = CONFIG.DEFAULT_GENDER;
+  }
+
+  /**
+   * Validate form fields
+   * @returns {boolean} - Whether form is valid
+   */
+  function validateForm() {
+    return (
+      DOM.name.value.trim() !== "" &&
+      DOM.dob.value.trim() !== "" &&
+      DOM.fatherName.value.trim() !== "" &&
+      DOM.motherName.value.trim() !== "" &&
+      DOM.contact.value.trim() !== "" &&
+      DOM.address.value.trim() !== ""
+    );
+  }
+
+  /**
+   * Set loading state
+   * @param {boolean} isLoading - Whether app is in loading state
+   */
+  function setLoading(isLoading) {
+    // Use UiManager to set loading state
+    UiManager.setLoading(
+      [
+        "#add-name",
+        "#add-DOB",
+        "#add-fname",
+        "#add-mname",
+        "#add-contact",
+        "#add-address",
+        "#add-transport",
+        "#add-diet",
+        "#add-class",
+        "#add-gender",
+        "#admit-button",
+        "#cancel-button",
+      ],
+      isLoading
+    );
+  }
+
+  /**
+   * Handle errors
+   * @param {string} context - Error context
+   * @param {Error} error - Error object
+   */
+  function handleError(context, error) {
+    // In production, you might want to log to a service instead of console
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`${context}: ${error.message}`);
+    }
+  }
+
+  // Initialize the application
+  init();
+})();

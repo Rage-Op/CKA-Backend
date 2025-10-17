@@ -1,160 +1,20 @@
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
-let checkbox = document.querySelector(".debit-sucess-checkbox");
-let debitDate = document.querySelector("#debit-date");
-let debitButton = document.querySelector("#debit-button");
-let examCbx = document.querySelector("#exam-checkbox");
-let backupButton = document.querySelector("#backup-button");
+/**
+ * Student Debit Management Module
+ * Handles adding debit entries to all students and backing up student data
+ */
 
-backupButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  backupStudentData();
-});
+// Immediately Invoked Function Expression (IIFE) for module pattern
+(function () {
+  "use strict";
 
-debitButton.addEventListener("click", (event) => {
-  event.preventDefault();
-  const userInput = window.prompt("Please enter your password:");
-  if (userInput !== null) {
-    const password = userInput.trim();
-    if (password === "admin123") {
-      console.log("processing debit");
-      debitFetchStudent();
-    } else {
-      window.prompt("Invalid password!");
-    }
-  } else {
-    console.log("debit dismissed.");
-    prompt("Debit cancelled by user.");
-  }
-});
-//
-//
-// previous debit logic
-async function getBsDate() {
-  let dateURL = `${localURI}/bs-date`;
-  let responseDate = await fetch(dateURL);
-  let datetimeStr = await responseDate.json();
-  let datePart = datetimeStr.split(" ")[0];
-  let parts = datePart.split("-");
-  let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-  return formattedDate;
-}
+  // Configuration
+  const CONFIG = {
+    SUCCESS_CHECKBOX_TIMEOUT: 3000,
+    ADMIN_PASSWORD: "admin123", // In a real production app, this would not be hardcoded
+  };
 
-async function calculateDaysDifference() {
-  try {
-    let dateURL = `${localURI}/bs-date`;
-    let responseDate = await fetch(dateURL);
-    if (!responseDate.ok) throw new Error("Failed to fetch current date");
-    let datetimeStr = await responseDate.json();
-
-    if (!datetimeStr || typeof datetimeStr !== "string") {
-      debitDate.textContent = "Date unavailable";
-      return;
-    }
-
-    let datePart = datetimeStr.split(" ")[0];
-    let parts = datePart.split("-");
-    if (parts.length !== 3) {
-      debitDate.textContent = "Date format error";
-      return;
-    }
-    let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-
-    let dateBString = await getPreviousDebitDate();
-    if (
-      !dateBString ||
-      typeof dateBString !== "string" ||
-      dateBString.split("/").length !== 3
-    ) {
-      debitDate.textContent = "No previous debit";
-      return;
-    }
-
-    let [yearA, monthA, dayA] = formattedDate.split("/").map(Number);
-    let [yearB, monthB, dayB] = dateBString.split("/").map(Number);
-
-    if (
-      isNaN(yearA) ||
-      isNaN(monthA) ||
-      isNaN(dayA) ||
-      isNaN(yearB) ||
-      isNaN(monthB) ||
-      isNaN(dayB)
-    ) {
-      debitDate.textContent = "Date parse error";
-      return;
-    }
-
-    let daysA = yearA * 365 + monthA * 30 + dayA;
-    let daysB = yearB * 365 + monthB * 30 + dayB;
-    let daysPassed = daysA - daysB;
-    debitDate.textContent = `${daysPassed} days ago`;
-  } catch (error) {
-    console.error("Error in calculateDaysDifference:", error);
-    debitDate.textContent = "Error calculating days";
-  }
-}
-
-async function getPreviousDebitDate() {
-  const logURL = `${localURI}/debit-log`;
-  try {
-    let response = await fetch(logURL);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    let data = await response.json();
-    // Check if data is an array and has at least one element with lastDebit
-    if (
-      Array.isArray(data) &&
-      data.length > 0 &&
-      data[0] &&
-      data[0].lastDebit
-    ) {
-      return data[0].lastDebit;
-    } else {
-      // Handle missing or malformed data
-      return null;
-    }
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-calculateDaysDifference();
-//
-//
-// Backup logic
-async function backupStudentData() {
-  const backupURL = `${localURI}/backup`;
-  try {
-    const backupResponse = await fetch(backupURL);
-    if (!backupResponse.ok) {
-      throw new Error("Error backing up student data");
-    }
-    const backupData = await backupResponse.json();
-    console.log(backupData);
-    backupButton.style.backgroundColor = "rgb(37, 37, 170)";
-    backupButton.style.color = "white";
-    console.log("Backup successful");
-  } catch (error) {
-    console.error("Backup failed:", error.message);
-    alert("Backup failed");
-  }
-}
-//
-//
-//
-async function debitFetchStudent() {
-  let URL = `${localURI}/students`;
-  let dateURL = `${localURI}/bs-date`;
-  let responseDate = await fetch(dateURL);
-  let datetimeStr = await responseDate.json();
-  let datePart = datetimeStr.split(" ")[0];
-  let parts = datePart.split("-");
-  let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-  let [year, month, day] = formattedDate.split("/");
-  let bsMonths = [
+  // Nepali BS months
+  const BS_MONTHS = [
     "Baisakh",
     "Jestha",
     "Asar",
@@ -168,82 +28,288 @@ async function debitFetchStudent() {
     "Falgun",
     "Chaitra",
   ];
-  let bsMonth = bsMonths[parseInt(month) - 1];
-  let bsFormattedMonthDate = `${day} ${bsMonth} ${year}`;
-  try {
-    let response = await fetch(`${URL}`);
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
+
+  // DOM Elements Cache
+  const DOM = {
+    // UI elements
+    debitSuccessCheckbox: document.querySelector(".debit-sucess-checkbox"),
+    debitDate: document.querySelector("#debit-date"),
+    debitButton: document.querySelector("#debit-button"),
+    examCheckbox: document.querySelector("#exam-checkbox"),
+    backupButton: document.querySelector("#backup-button"),
+    notice: document.querySelector("#sucess-dialog"),
+  };
+
+  // State keys
+  const STATE_KEYS = {
+    LAST_DEBIT_DATE: "debit_lastDebitDate",
+    DEBIT_SETTINGS: "debit_settings",
+  };
+
+  /**
+   * Initialize the application
+   */
+  function init() {
+    // Initialize state
+    initializeState();
+
+    // Attach event listeners
+    attachEventListeners();
+
+    // Restore state if available
+    restoreState();
+
+    // Calculate days difference
+    calculateDaysDifference();
+  }
+
+  /**
+   * Initialize state with default values
+   */
+  function initializeState() {
+    if (!StateManager.getState(STATE_KEYS.LAST_DEBIT_DATE)) {
+      StateManager.setState(STATE_KEYS.LAST_DEBIT_DATE, null);
+    }
+  }
+
+  /**
+   * Restore state from StateManager
+   */
+  function restoreState() {
+    const lastDebitDate = StateManager.getState(STATE_KEYS.LAST_DEBIT_DATE);
+    if (lastDebitDate) {
+      // State is already available, will be used in calculateDaysDifference
+    }
+  }
+
+  /**
+   * Attach event listeners to DOM elements
+   */
+  function attachEventListeners() {
+    DOM.debitButton.addEventListener("click", handleDebitClick);
+    DOM.backupButton.addEventListener("click", handleBackupClick);
+  }
+
+  /**
+   * Handle debit button click
+   * @param {Event} event - Click event
+   */
+  function handleDebitClick(event) {
+    event.preventDefault();
+
+    // Check if safe mode is disabled
+    if (!window.CONFIG.isSafeMode()) {
+      fetchStudentsForDebit();
+      return;
     }
 
-    let data = await response.json();
-    let updateRequestArray = [];
-    data.forEach((student) => {
-      checkbox.checked = false;
-      let newDebitAmountArray = student.debitAmount;
-      let newDebitDate = bsFormattedMonthDate;
-      let newDebitAmount = 0;
-      let newDebitRemark;
-      if (examCbx.checked) {
-        if (student.transport === true && student.diet === true) {
-          newDebitRemark = "Monthly Fees, Transport, Diet, Exam";
-          newDebitAmount =
-            newDebitAmount +
-            student.monthlyFees +
-            student.transportFees +
-            student.dietFees +
-            student.examFees;
-        } else if (student.transport === true && student.diet === !true) {
-          newDebitRemark = "Monthly Fees, Transport, Exam";
-          newDebitAmount =
-            newDebitAmount +
-            student.monthlyFees +
-            student.transportFees +
-            student.examFees;
-        } else if (student.transport === !true && student.diet === true) {
-          newDebitRemark = "Monthly Fees, Diet, Exam";
-          newDebitAmount =
-            newDebitAmount +
-            student.monthlyFees +
-            student.dietFees +
-            student.examFees;
-        } else {
-          newDebitRemark = "Monthly Fees, Exam";
-          newDebitAmount =
-            newDebitAmount + student.monthlyFees + student.examFees;
-        }
-      } else {
-        if (student.transport === true && student.diet === true) {
-          newDebitRemark = "Monthly Fees, Transport, Diet";
-          newDebitAmount =
-            newDebitAmount +
-            student.monthlyFees +
-            student.transportFees +
-            student.dietFees;
-        } else if (student.transport === true && student.diet === !true) {
-          newDebitRemark = "Monthly Fees, Transport";
-          newDebitAmount =
-            newDebitAmount + student.monthlyFees + student.transportFees;
-        } else if (student.transport === !true && student.diet === true) {
-          newDebitRemark = "Monthly Fees, Diet";
-          newDebitAmount =
-            newDebitAmount + student.monthlyFees + student.dietFees;
-        } else {
-          newDebitRemark = "Monthly Fees";
-          newDebitAmount = newDebitAmount + student.monthlyFees;
+    // Password confirmation (only in safe mode)
+    const userInput = window.prompt("Please enter your password:");
+
+    if (!userInput) {
+      return; // User cancelled
+    }
+
+    const password = userInput.trim();
+
+    if (password === CONFIG.ADMIN_PASSWORD) {
+      fetchStudentsForDebit();
+    } else {
+      window.prompt("Invalid password!");
+    }
+  }
+
+  /**
+   * Handle backup button click
+   * @param {Event} event - Click event
+   */
+  function handleBackupClick(event) {
+    event.preventDefault();
+    backupStudentData();
+  }
+
+  /**
+   * Get current date in BS format
+   * @returns {Promise<string>} - Formatted BS date
+   */
+  async function getBsDate() {
+    try {
+      return await ApiService.getCurrentDate();
+    } catch (error) {
+      handleError("Error fetching BS date", error);
+      return null;
+    }
+  }
+
+  /**
+   * Calculate days since last debit
+   */
+  async function calculateDaysDifference() {
+    try {
+      // Get previous debit date from state or API
+      let previousDebitDate = StateManager.getState(STATE_KEYS.LAST_DEBIT_DATE);
+
+      if (!previousDebitDate) {
+        previousDebitDate = await getPreviousDebitDate();
+        if (previousDebitDate) {
+          StateManager.setState(STATE_KEYS.LAST_DEBIT_DATE, previousDebitDate);
         }
       }
-      let debitPatchObject = {
-        date: newDebitDate,
-        amount: newDebitAmount,
-        remark: newDebitRemark,
+
+      if (!previousDebitDate) {
+        DOM.debitDate.textContent = "No previous debit";
+        return;
+      }
+
+      // Get current date
+      const currentDate = await ApiService.getCurrentDate();
+      if (!currentDate) return;
+
+      // Parse dates
+      const [yearA, monthA, dayA] = currentDate.split("/").map(Number);
+      const [yearB, monthB, dayB] = previousDebitDate.split("/").map(Number);
+
+      // Validate date parts
+      if (
+        isNaN(yearA) ||
+        isNaN(monthA) ||
+        isNaN(dayA) ||
+        isNaN(yearB) ||
+        isNaN(monthB) ||
+        isNaN(dayB)
+      ) {
+        DOM.debitDate.textContent = "Date parse error";
+        return;
+      }
+
+      // Calculate days difference (approximate)
+      const daysA = yearA * 365 + monthA * 30 + dayA;
+      const daysB = yearB * 365 + monthB * 30 + dayB;
+      const daysPassed = daysA - daysB;
+
+      DOM.debitDate.textContent = `${daysPassed} days ago`;
+    } catch (error) {
+      handleError("Error calculating days difference", error);
+      DOM.debitDate.textContent = "Error calculating days";
+    }
+  }
+
+  /**
+   * Get previous debit date from database
+   * @returns {Promise<string|null>} - Previous debit date
+   */
+  async function getPreviousDebitDate() {
+    try {
+      const data = await ApiService.getDebitLog();
+
+      // Check if data is valid
+      if (
+        Array.isArray(data) &&
+        data.length > 0 &&
+        data[0] &&
+        data[0].lastDebit
+      ) {
+        return data[0].lastDebit;
+      }
+
+      return null;
+    } catch (error) {
+      handleError("Error fetching previous debit date", error);
+      return null;
+    }
+  }
+
+  /**
+   * Backup student data
+   */
+  async function backupStudentData() {
+    setLoading(true);
+
+    try {
+      await ApiService.backupData();
+
+      // Update UI to show success
+      DOM.backupButton.style.backgroundColor = "rgb(37, 37, 170)";
+      DOM.backupButton.style.color = "white";
+
+      UiManager.showNotification(
+        "Success!",
+        "Backup completed successfully",
+        "success"
+      );
+    } catch (error) {
+      handleError("Error backing up student data", error);
+      UiManager.showNotification("Failed!", "Backup failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Fetch all students for debit processing
+   */
+  async function fetchStudentsForDebit() {
+    setLoading(true);
+
+    try {
+      // Get current date
+      const currentDate = await ApiService.getCurrentDate();
+      if (!currentDate) throw new Error("Failed to get current date");
+
+      // Format date for display
+      const [year, month, day] = currentDate.split("/");
+      const bsFormattedMonthDate = ApiService.formatBSDate(currentDate);
+
+      // Fetch all students
+      const students = await ApiService.getStudents();
+
+      // Prepare update requests
+      const updateRequests = prepareDebitUpdates(
+        students,
+        bsFormattedMonthDate
+      );
+
+      // Process updates
+      await updateDebit(updateRequests, currentDate);
+    } catch (error) {
+      handleError("Error processing debit", error);
+      UiManager.showNotification("Failed!", "Debit processing failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Prepare debit update requests for all students
+   * @param {Array} students - List of students
+   * @param {string} debitDate - Formatted debit date
+   * @returns {Array} - Array of update requests
+   */
+  function prepareDebitUpdates(students, debitDate) {
+    const updateRequests = [];
+
+    students.forEach((student) => {
+      // Reset checkbox
+      DOM.debitSuccessCheckbox.checked = false;
+
+      // Create new debit entry
+      const newDebitEntry = {
+        date: debitDate,
+        amount: calculateDebitAmount(student),
+        remark: generateDebitRemark(student),
       };
-      newDebitAmountArray.push(debitPatchObject);
+
+      // Update debit amount array
+      const newDebitAmountArray = [...student.debitAmount, newDebitEntry];
+
+      // Calculate total debit
       let totalDebitAmount = 0;
-      newDebitAmountArray.forEach((debitAmountObject) => {
-        totalDebitAmount = totalDebitAmount + debitAmountObject.amount;
+      newDebitAmountArray.forEach((debitItem) => {
+        totalDebitAmount += debitItem.amount;
       });
-      let studentPatchObject = {
+
+      // Create update request
+      const updateRequest = {
         studentId: student.studentId,
         debitAmount: newDebitAmountArray,
         fees: {
@@ -251,101 +317,136 @@ async function debitFetchStudent() {
           credit: student.fees.credit,
         },
       };
-      updateRequestArray.push(studentPatchObject);
-    });
-    updateDebit(updateRequestArray);
-  } catch (error) {
-    console.log("error in debitFetchStudent");
-    console.log(error);
-  }
-}
-//
-//
-//
-async function updateDebit(patchArray) {
-  const patchURL = `${localURI}/debit`;
-  const patchDebitDateURL = `${localURI}/debit-log`;
-  let dateURL = `${localURI}/bs-date`;
-  let responseDate = await fetch(dateURL);
-  let datetimeStr = await responseDate.json();
-  let datePart = datetimeStr.split(" ")[0];
-  let parts = datePart.split("-");
-  let formattedDate = `${parts[0]}/${parts[1]}/${parts[2]}`;
-  let renewDebitDate = {
-    lastDebit: formattedDate,
-  };
-  const DebitDateoptions = {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(renewDebitDate),
-  };
-  await fetch(patchDebitDateURL, DebitDateoptions)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Response data:", data);
-      examCbx.checked = false;
-    })
-    .catch((error) => {
-      console.error("There was a problem updating debit log:", error);
-    });
-  const options = {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(patchArray),
-  };
-  await fetch(patchURL, options)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Response data:", data);
-      fetchStudent();
-      calculateDaysDifference();
-      checkbox.checked = true;
-      setTimeout(() => {
-        checkbox.checked = false;
-      }, 3000);
-      setTimeout(() => {
-        window.location.reload();
-      }, 6000);
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-      }, 2000);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the delete operation:", error);
-      notice.innerHTML = "<h4>Failed!</h4><p>Update failed</p>";
-      notice.style.backgroundColor = "rgba(254, 205, 211, 0.7)";
-      notice.style.border = "1px solid #D32F2F";
-      notice.style.opacity = "100";
-      setTimeout(() => {
-        notice.style.opacity = "0";
-        noticeToDefault();
-      }, 2000);
-      document.querySelector("#chx").style.backgroundColor = "red";
-    });
-}
 
-function noticeToDefault() {
-  setTimeout(() => {
-    notice.style.backgroundColor = "rgba(187, 247, 208, 0.7)";
-    notice.style.border = "1px solid #50c156";
-    notice.innerHTML = "<h4>Sucess!</h4><p>Student updated</p>";
-  }, 300);
-}
-// MAIN LOGIC
-// MAIN LOGIC
-// MAIN LOGIC
+      updateRequests.push(updateRequest);
+    });
+
+    return updateRequests;
+  }
+
+  /**
+   * Calculate debit amount for a student
+   * @param {Object} student - Student object
+   * @returns {number} - Calculated debit amount
+   */
+  function calculateDebitAmount(student) {
+    let debitAmount = 0;
+
+    // Add monthly fees
+    debitAmount += student.monthlyFees;
+
+    // Add transport fees if applicable
+    if (student.transport) {
+      debitAmount += student.transportFees;
+    }
+
+    // Add diet fees if applicable
+    if (student.diet) {
+      debitAmount += student.dietFees;
+    }
+
+    // Add exam fees if applicable
+    if (DOM.examCheckbox.checked) {
+      debitAmount += student.examFees;
+    }
+
+    return debitAmount;
+  }
+
+  /**
+   * Generate debit remark based on student services
+   * @param {Object} student - Student object
+   * @returns {string} - Debit remark
+   */
+  function generateDebitRemark(student) {
+    const services = ["Monthly Fees"];
+
+    if (student.transport) {
+      services.push("Transport");
+    }
+
+    if (student.diet) {
+      services.push("Diet");
+    }
+
+    if (DOM.examCheckbox.checked) {
+      services.push("Exam");
+    }
+
+    return services.join(", ");
+  }
+
+  /**
+   * Update debit information in the database
+   * @param {Array} updateRequests - Array of update requests
+   * @param {string} currentDate - Current date
+   */
+  async function updateDebit(updateRequests, currentDate) {
+    setLoading(true);
+
+    try {
+      // Update debit log with new date
+      await ApiService.updateDebitLog({ lastDebit: currentDate });
+
+      // Reset exam checkbox
+      DOM.examCheckbox.checked = false;
+
+      // Update all students
+      await ApiService.processDebit(updateRequests);
+
+      // Update UI to show success
+      DOM.debitSuccessCheckbox.checked = true;
+
+      // Store the new debit date in state
+      StateManager.setState(STATE_KEYS.LAST_DEBIT_DATE, currentDate);
+
+      setTimeout(() => {
+        DOM.debitSuccessCheckbox.checked = false;
+      }, CONFIG.SUCCESS_CHECKBOX_TIMEOUT);
+
+      // Show success notification
+      UiManager.showNotification(
+        "Success!",
+        "Debit processed successfully",
+        "success"
+      );
+
+      // Update days difference display
+      calculateDaysDifference();
+
+      // No page reload needed
+    } catch (error) {
+      handleError("Error updating debit", error);
+      UiManager.showNotification("Failed!", "Debit update failed", "error");
+      document.querySelector("#chx").style.backgroundColor = "red";
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /**
+   * Set loading state
+   * @param {boolean} isLoading - Whether app is in loading state
+   */
+  function setLoading(isLoading) {
+    UiManager.setLoading(
+      ["#debit-button", "#backup-button", "#exam-checkbox"],
+      isLoading
+    );
+  }
+
+  /**
+   * Handle errors
+   * @param {string} context - Error context
+   * @param {Error} error - Error object
+   */
+  function handleError(context, error) {
+    // In production, you might want to log to a service instead of console
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`${context}: ${error.message}`);
+    }
+  }
+
+  // Initialize the application
+  init();
+})();
