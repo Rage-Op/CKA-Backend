@@ -126,8 +126,8 @@ app.post("/login", (req, res) => {
   console.log("password: ", password);
 
   if (
-    (username === "admin123" || username === "") &&
-    (password === "password123" || password === "")
+    (username === "admin123" && password === "password123") ||
+    (username === "pradip123" && password === "cka@2016")
   ) {
     // Create JWT token
     const token = jwt.sign({ username: username, userId: 1 }, JWT_SECRET, {
